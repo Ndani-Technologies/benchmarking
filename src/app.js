@@ -12,11 +12,12 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJSDoc = require("swagger-jsdoc");
 
 const mongoose = require("mongoose");
-const passport = require("./middleware/passport");
-const UserRouter = require("./Routes/UsersRouter");
 const env = require("./configs/dev");
-const roleRouter = require("./Routes/RoleRouter");
-const permissionRouter = require("./Routes/PermissionRouter");
+
+const category = require("./Routes/CategoryRouter");
+const questionnaire = require("./Routes/questionnaireRouter");
+const benchmarking = require("./Routes/benchmarkingRouter");
+const answer = require("./Routes/answerRouter");
 
 const url = env.mongoUrl;
 const connect = mongoose.connect(url);
@@ -44,8 +45,8 @@ app.use(express.static("./assets"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 // app.use(responseTime);
 
 const swaggerOptions = {
@@ -75,9 +76,10 @@ app.get("/api-docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-app.use("/user", UserRouter);
-app.use("/role", roleRouter);
-app.use("/permission", permissionRouter);
+app.use("/category", category);
+app.use("/questionnaire", questionnaire);
+app.use("/benchmarking", benchmarking);
+app.use("/answer", answer);
 
 app.use((req, res, next) => {
   const err = new Error();
@@ -87,10 +89,10 @@ app.use((req, res, next) => {
 });
 
 // error handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   let status = err.status || 500;
   let message = err.message || "Internal Server Error";
-  console.log("error", err);
+  console.log("error324", err);
 
   if (err.name === "MongoServerError" && err.code === 11000) {
     status = 400;
@@ -107,6 +109,7 @@ app.use((err, req, res) => {
       success: false,
     },
   });
+  next();
 });
 
 module.exports = app;

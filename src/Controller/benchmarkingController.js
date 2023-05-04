@@ -1,85 +1,112 @@
-
-const Benchmarking = require('../Models/Benchmarking');
+const Benchmarking = require("../Models/bench");
+const Questionnaire = require("../Models/questionnaire");
 
 const benchmarkingController = {
-
-    async getAllBenchmarkings(req, res, next) {
-        try {
-            const benchmarkings = await Benchmarking.find();
-            res.json({ success: true, message: 'Successfully retrieved benchmarkings', data: benchmarkings });
-        } catch (err) {
-           next(err) 
-        }
-    },
-
-    async getBenchmarking(req, res, next) {
-        try {
-            const benchmarking = await Benchmarking.findById(req.params.id);
-            if (benchmarking == null) {
-                return res.status(404).json({ success: false, message: 'Cannot retrieved benchmarking' });
-            }
-            res.json({ success: true, message: 'Successfully retrieved benchmarking', data: benchmarking });
-        } catch (err) {
-           next(err)
-        }
-    },
-
-    async createBenchmarking(req, res, next) {
-        const benchmarking = new Benchmarking(req.body);
-        try {
-            const newBenchmarking = await benchmarking.save();
-            res.status(201).json({ success: true, message: 'Successfully created benchmarking', data: newBenchmarking });
-        } catch (err) {
-            next(err)
-        }
-    },
-
-    async updateBenchmarking(req, res, next) {
-        try {
-            const benchmarking = await Benchmarking.findById(req.params.id);
-            if (benchmarking == null) {
-                return res.status(404).json({ success: false, message: 'Cannot find benchmarking' });
-            }
-            if (req.body.title != null) {
-                benchmarking.title = req.body.title;
-            }
-            if (req.body.description != null) {
-                benchmarking.description = req.body.description;
-            }
-            if (req.body.category != null) {
-                benchmarking.category = req.body.category;
-            }
-            if (req.body.languageSelector != null) {
-                benchmarking.languageSelector = req.body.languageSelector;
-            }
-            if (req.body.status != null) {
-                benchmarking.status = req.body.status;
-            }
-            if (req.body.visibility != null) {
-                benchmarking.visibility = req.body.visibility;
-            }
-            if (req.body.answerOptions != null) {
-                benchmarking.answerOptions = req.body.answerOptions;
-            }
-            const updatedBenchmarking = await benchmarking.save();
-            res.json({ success: true, message: 'Successfully updated benchmarking', data: updatedBenchmarking });
-        } catch (err) {
-            next(err)
-        }
-    },
-
-    async deleteBenchmarking(req, res, next) {
-        try {
-            const benchmarking = await Benchmarking.findById(req.params.id);
-            if (benchmarking == null) {
-                return res.status(404).json({ success: false, message: 'Csannot find benchmarking' });
-            }
-            await benchmarking.remove();
-            res.json({ success: true, message: 'Successfully deleted benchmarking' });
-        } catch (err) {
-            next(err)
-        }
+  getAllBenchmarking: async (req, res, next) => {
+    try {
+      const benchmarkings = await Benchmarking.find().populate("questionnaire");
+      res
+        .status(200)
+        .json({
+          message: "Categories retrieved",
+          success: true,
+          data: benchmarkings,
+        });
+    } catch (error) {
+      console.error(error);
+      next(error);
     }
-}
-module.exports = benchmarkingController;
+  },
 
+  getBenchmarkingById: async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const benchmarking = await Benchmarking.findById(id).populate(
+        "questionnaire"
+      );
+      if (benchmarking) {
+        res
+          .status(200)
+          .json({
+            message: "Benchmarking retrieved",
+            success: true,
+            data: benchmarking,
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Benchmarking not found", success: false });
+      }
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  },
+
+  createBenchmarking: async (req, res, next) => {
+    const { title, country } = req.body;
+    const questionnaire = await Questionnaire.find({});
+    try {
+      const benchmarking = await Benchmarking.create({
+        title,
+        country,
+        questionnaire,
+      });
+      res
+        .status(201)
+        .json({
+          message: "Benchmarking created",
+          success: true,
+          data: benchmarking,
+        });
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  },
+
+  updateBenchmarkingById: async (req, res, next) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    try {
+      const benchmarking = await Benchmarking.findByIdAndUpdate(
+        id,
+        { title },
+        { new: true }
+      );
+      if (benchmarking) {
+        res
+          .status(200)
+          .json({ message: "Benchmarking updated", success: true });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Benchmarking not found", success: false });
+      }
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  },
+
+  deleteBenchmarkingById: async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const benchmarking = await Benchmarking.findByIdAndDelete(id);
+      if (benchmarking) {
+        res
+          .status(200)
+          .json({ message: "Benchmarking deleted", success: true });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Benchmarking not found", success: false });
+      }
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  },
+};
+
+module.exports = benchmarkingController;

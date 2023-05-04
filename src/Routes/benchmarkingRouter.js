@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const benchmarkingController = require('../controllers/benchmarkingController');
+const express = require("express");
 
-router.get('/', benchmarkingController.getAllBenchmarkings);
-router.get('/:id', benchmarkingController.getBenchmarking);
-router.post('/', benchmarkingController.createBenchmarking);
-router.patch('/:id', benchmarkingController.updateBenchmarking);
-router.delete('/:id', benchmarkingController.deleteBenchmarking);
+const router = express.Router();
+const benchmarkingController = require("../Controller/benchmarkingController");
+
+router.get("/", benchmarkingController.getAllBenchmarking);
+router.get("/:id", benchmarkingController.getBenchmarkingById);
+router.post("/", benchmarkingController.createBenchmarking);
+router.put("/:id", benchmarkingController.updateBenchmarkingById);
+router.delete("/:id", benchmarkingController.deleteBenchmarkingById);
 
 module.exports = router;
