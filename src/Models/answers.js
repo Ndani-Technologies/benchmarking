@@ -17,8 +17,11 @@ const answerSchema = new Schema({
     required: true,
     default: false,
   },
+  answerAttempt: {
+    type: Number,
+  },
 });
 
-const answer = mongoose.model("answer", answerSchema);
+const answer = mongoose.model("answers", answerSchema);
 
 module.exports = answer;

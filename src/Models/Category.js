@@ -6,9 +6,21 @@ const categorySchema = new mongoose.Schema({
     enum: ["English", "French", "Spanish", "Arabic"],
     default: "English",
   },
-  title: {
+  titleEng: {
     type: String,
     required: true,
+    unique: true,
+  },
+  titleAr: {
+    type: String,
+    unique: true,
+  },
+  titleSp: {
+    type: String,
+    unique: true,
+  },
+  titleFr: {
+    type: String,
     unique: true,
   },
 });

@@ -4,13 +4,11 @@ const categoryController = {
   getAllCategories: async (req, res, next) => {
     try {
       const categories = await Category.find();
-      res
-        .status(200)
-        .json({
-          message: "Categories retrieved",
-          success: true,
-          data: categories,
-        });
+      res.status(200).json({
+        message: "Categories retrieved",
+        success: true,
+        data: categories,
+      });
     } catch (error) {
       console.error(error);
       next(error);
@@ -22,13 +20,11 @@ const categoryController = {
     try {
       const category = await Category.findById(id);
       if (category) {
-        res
-          .status(200)
-          .json({
-            message: "Category retrieved",
-            success: true,
-            data: category,
-          });
+        res.status(200).json({
+          message: "Category retrieved",
+          success: true,
+          data: category,
+        });
       } else {
         res.status(404).json({ message: "Category not found" });
       }
@@ -39,17 +35,32 @@ const categoryController = {
   },
 
   createCategory: async (req, res, next) => {
-    const { title, language } = req.body;
+    const { titleEng, titleAr, titleFr, titleSp, language } = req.body;
+    const cat = new Category();
     try {
-      let category;
       if (language) {
-        category = await Category.create({ title, language });
+        if (titleEng) {
+          cat.titleEng = titleEng;
+        }
+        if (titleAr) {
+          cat.titleAr = titleAr;
+        }
+        if (titleFr) {
+          cat.titleFr = titleFr;
+        }
+        if (titleSp) {
+          cat.titleSp = titleSp;
+        }
+        cat.language = language;
       } else {
-        category = await Category.create({ title });
+        cat.titleEng = titleEng;
+        cat.language = "English";
       }
+
+      const resp = await cat.save();
       res
         .status(201)
-        .json({ message: "Category created", success: true, data: category });
+        .json({ message: "Category created", success: true, data: resp });
     } catch (error) {
       console.error(error);
       next(error);
@@ -93,13 +104,11 @@ const categoryController = {
       const { language } = req.params;
       const searchLanguage = language || "English";
       const categories = await Category.find({ language: searchLanguage });
-      res
-        .status(200)
-        .json({
-          message: "Categories retrieved",
-          success: true,
-          data: categories,
-        });
+      res.status(200).json({
+        message: "Categories retrieved",
+        success: true,
+        data: categories,
+      });
     } catch (error) {
       console.error(error);
       next(error);
