@@ -26,7 +26,7 @@ const categoryController = {
           data: category,
         });
       } else {
-        res.status(404).json({ message: "Category not found" });
+        res.status(404).json({ success: false, message: "category not found" });
       }
     } catch (error) {
       console.error(error);
@@ -41,26 +41,37 @@ const categoryController = {
       if (language) {
         if (titleEng) {
           cat.titleEng = titleEng;
+          cat.titleAr = "";
+          cat.titleFr = "";
+          cat.titleSp = "";
         }
         if (titleAr) {
           cat.titleAr = titleAr;
+          cat.titleFr = "";
+          cat.titleSp = "";
+          cat.titleEng = "";
         }
         if (titleFr) {
           cat.titleFr = titleFr;
+          cat.titleAr = "";
+          cat.titleSp = "";
+          cat.titleEng = "";
         }
         if (titleSp) {
           cat.titleSp = titleSp;
+          cat.titleFr = "";
+          cat.titleAr = "";
+          cat.titleEng = "";
         }
         cat.language = language;
       } else {
         cat.titleEng = titleEng;
         cat.language = "English";
       }
-
-      const resp = await cat.save();
+      const catData = await Category.create(cat);
       res
         .status(201)
-        .json({ message: "Category created", success: true, data: resp });
+        .json({ message: "Category created", success: true, data: catData });
     } catch (error) {
       console.error(error);
       next(error);

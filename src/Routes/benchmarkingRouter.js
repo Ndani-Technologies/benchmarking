@@ -22,5 +22,16 @@ router.get(
   "/startrange/:startrange/endrange/:endrange",
   benchmarkingController.getBenchmarkingByCompletionLevel
 );
-
+router.get(
+  "/compare/id1/:id1/id2/:id2",
+  benchmarkingController.compareTwoBenchmarking
+);
+router.get(
+  "/compare/id1/:id1/id2/:id2/id3/:id3",
+  benchmarkingController.compareThreeBenchmarking
+);
+router.get(
+  "/compare/id1/:id1/id2/:id2/id3/:id3/id4/:id4",
+  benchmarkingController.compareFourBenchmarking
+);
 module.exports = router;

@@ -112,12 +112,10 @@ const benchmarkingController = {
           data: benchmarking,
         });
       } else {
-        res
-          .status(404)
-          .json({
-            message: "Benchmarking not found with title",
-            success: false,
-          });
+        res.status(404).json({
+          message: "Benchmarking not found with title",
+          success: false,
+        });
       }
     } catch (error) {
       console.error(error);
@@ -137,12 +135,10 @@ const benchmarkingController = {
           data: benchmarking,
         });
       } else {
-        res
-          .status(404)
-          .json({
-            message: "Benchmarking not found by country",
-            success: false,
-          });
+        res.status(404).json({
+          message: "Benchmarking not found by country",
+          success: false,
+        });
       }
     } catch (error) {
       console.error(error);
@@ -227,6 +223,57 @@ const benchmarkingController = {
       }
     } catch (error) {
       console.error(error);
+      next(error);
+    }
+  },
+  compareTwoBenchmarking: async (req, res, next) => {
+    try {
+      const benchId1 = req.params.id1;
+      const benchId2 = req.params.id2;
+      const benchmarks = await Benchmarking.find({
+        _id: { $in: [benchId1, benchId2] },
+      });
+      res.status(200).json({
+        success: true,
+        message: "Comparison successful",
+        data: benchmarks,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  compareThreeBenchmarking: async (req, res, next) => {
+    try {
+      const benchId1 = req.params.id1;
+      const benchId2 = req.params.id2;
+      const benchId3 = req.params.id3;
+      const benchmarks = await Benchmarking.find({
+        _id: { $in: [benchId1, benchId2, benchId3] },
+      });
+      res.status(200).json({
+        success: true,
+        message: "Comparison successful",
+        data: benchmarks,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  compareFourBenchmarking: async (req, res, next) => {
+    try {
+      const benchId1 = req.params.id1;
+      const benchId2 = req.params.id2;
+      const benchId3 = req.params.id3;
+      const benchId4 = req.params.id4;
+      const benchmarks = await Benchmarking.find({
+        _id: { $in: [benchId1, benchId2, benchId3, benchId4] },
+      });
+      res.status(200).json({
+        success: true,
+        message: "Comparison successful",
+        data: benchmarks,
+      });
+    } catch (error) {
       next(error);
     }
   },
