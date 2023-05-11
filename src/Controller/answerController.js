@@ -1,14 +1,50 @@
 const Answer = require("../Models/answers");
+const { redisClient } = require("../middleware/redisClient");
 
 const answerController = {
   getAllAnswers: async (req, res, next) => {
+    const cache = await redisClient.get("ANSWERS");
+    let cacheObj = "";
+    let cacheLength = 0;
+    if (cache != null) {
+      cacheObj = JSON.parse(cache);
+      cacheLength = Object.keys(cacheObj).length;
+    } else {
+      cacheLength = 0;
+      cacheObj = "";
+    }
     try {
       const answers = await Answer.find();
-      res
-        .status(200)
-        .json({ message: "answers retrieved", success: true, data: answers });
+      if (answers === "") {
+        res.status(404).json({
+          success: false,
+          message: "answers not found",
+        });
+        return;
+      }
+      if (answers.length > cacheLength) {
+        redisClient.set("ANSWERS", JSON.stringify(answers));
+        res.status(200).json({
+          success: true,
+          message: "answers found",
+          data: answers,
+        });
+      }
+      if (answers.length < cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "answers found",
+          data: JSON.parse(cache),
+        });
+      }
+      if (answers.length === cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "answers found",
+          data: JSON.parse(cache),
+        });
+      }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },

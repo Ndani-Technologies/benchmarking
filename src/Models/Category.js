@@ -13,15 +13,12 @@ const categorySchema = new mongoose.Schema({
   },
   titleAr: {
     type: String,
-    unique: true,
   },
   titleSp: {
     type: String,
-    unique: true,
   },
   titleFr: {
     type: String,
-    unique: true,
   },
 });
 

@@ -12,5 +12,6 @@ router.get(
   "/questionnaires/getByLanguage/:language?",
   QuestionnaireController.getQuestionnaireByLanguage
 );
+router.get("/getuserById/:id", QuestionnaireController.getUserById);
 
 module.exports = router;

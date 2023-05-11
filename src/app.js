@@ -12,6 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJSDoc = require("swagger-jsdoc");
 
 const mongoose = require("mongoose");
+// const passport = require("./middleware/passport");
 const env = require("./configs/dev");
 
 const category = require("./Routes/CategoryRouter");
@@ -76,16 +77,24 @@ app.get("/api-docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-app.use("/category", category);
-app.use("/questionnaire", questionnaire);
-app.use("/benchmarking", benchmarking);
-app.use("/answer", answer);
+app.use("/api/v1/category", category);
+app.use("/api/v1/questionnaire", questionnaire);
+app.use("/api/v1/benchmarking", benchmarking);
+app.use("/api/v1/answer", answer);
 
 app.use((req, res, next) => {
   const err = new Error();
   err.status = 404;
   err.message = "Route not found";
   next(err);
+});
+
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "internal server error",
+  });
+  next();
 });
 
 // error handler

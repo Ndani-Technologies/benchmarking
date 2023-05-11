@@ -1,17 +1,52 @@
 const Category = require("../Models/Category");
+const { redisClient } = require("../middleware/redisClient");
 
 const categoryController = {
   getAllCategories: async (req, res, next) => {
+    const cache = await redisClient.get("CATEGORIES");
+    let cacheObj = "";
+    let cacheLength = 0;
+    if (cache != null) {
+      cacheObj = JSON.parse(cache);
+      cacheLength = Object.keys(cacheObj).length;
+    } else {
+      cacheLength = 0;
+      cacheObj = "";
+    }
+
     try {
       const categories = await Category.find();
-      res.status(200).json({
-        message: "Categories retrieved",
-        success: true,
-        data: categories,
-      });
-    } catch (error) {
-      console.error(error);
-      next(error);
+      if (categories === "") {
+        res.status(404).json({
+          success: false,
+          message: "categories not found",
+        });
+        return;
+      }
+      if (categories.length > cacheLength) {
+        redisClient.set("CATEGORIES", JSON.stringify(categories));
+        res.status(200).json({
+          success: true,
+          message: "categories found",
+          data: categories,
+        });
+      }
+      if (categories.length < cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "categories found",
+          data: JSON.parse(cache),
+        });
+      }
+      if (categories.length === cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "categories found",
+          data: JSON.parse(cache),
+        });
+      }
+    } catch (err) {
+      next(err);
     }
   },
 
@@ -68,6 +103,7 @@ const categoryController = {
         cat.titleEng = titleEng;
         cat.language = "English";
       }
+      console.log("category ", cat);
       const catData = await Category.create(cat);
       res
         .status(201)

@@ -8,6 +8,7 @@ const devEnv = {
   loginUrl: process.env.LOGIN_URL,
   registerUrl: process.env.REGISTER_URL,
   idpCertificate: process.env.IDP_CERTIFICATE,
+  userUrl: process.env.USER_URL,
 };
 
 module.exports = devEnv;

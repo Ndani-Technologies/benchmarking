@@ -1,17 +1,69 @@
+const { default: axios } = require("axios");
 const Benchmarking = require("../Models/bench");
 const Questionnaire = require("../Models/questionnaire");
+const { redisClient } = require("../middleware/redisClient");
+const devenv = require("../configs/dev");
 
 const benchmarkingController = {
   getAllBenchmarking: async (req, res, next) => {
+    const cache = await redisClient.get("BENCHMARKINGS");
+    let cacheObj = "";
+    let cacheLength = 0;
+    if (cache != null) {
+      cacheObj = JSON.parse(cache);
+      cacheLength = Object.keys(cacheObj).length;
+    } else {
+      cacheLength = 0;
+      cacheObj = "";
+    }
     try {
-      const benchmarkings = await Benchmarking.find().populate("questionnaire");
-      res.status(200).json({
-        message: "Benchmarks retrieved",
-        success: true,
-        data: benchmarkings,
-      });
+      const benchmarkings = await Benchmarking.find()
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        });
+      if (benchmarkings === "") {
+        res.status(404).json({
+          success: false,
+          message: "benchmarkings not found",
+        });
+        return;
+      }
+      if (benchmarkings.length > cacheLength) {
+        redisClient.set("BENCHMARKINGS", JSON.stringify(benchmarkings));
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: benchmarkings,
+        });
+      }
+      if (benchmarkings.length < cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: JSON.parse(cache),
+        });
+      }
+      if (benchmarkings.length === cacheLength) {
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: JSON.parse(cache),
+        });
+      }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
@@ -34,28 +86,34 @@ const benchmarkingController = {
           .json({ message: "Benchmarking not found", success: false });
       }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
 
-  createBenchmarking: async (req, res, next) => {
-    const { title, country } = req.body;
-    const questionnaire = await Questionnaire.find({});
+  createBenchmarking: async (req, res) => {
+    const { userId, title, country } = req.body;
     try {
-      const benchmarking = await Benchmarking.create({
-        title,
-        country,
-        questionnaire,
-      });
-      res.status(201).json({
-        message: "Benchmarking created",
-        success: true,
-        data: benchmarking,
-      });
+      const user = await axios.get(`${devenv.userUrl}user/${userId}`);
+      if (user.data.success) {
+        const questionnaire = await Questionnaire.find({});
+
+        const benchmarking = await Benchmarking.create({
+          title,
+          country,
+          questionnaire,
+          user: user.data.data,
+        });
+
+        res.status(201).json({
+          message: "Benchmarking created",
+          success: true,
+          data: benchmarking,
+        });
+      } else {
+        res.status(404).json({ message: "User not found", success: false });
+      }
     } catch (error) {
-      console.error(error);
-      next(error);
+      res.status(404).json({ message: error, success: false });
     }
   },
 
@@ -75,7 +133,6 @@ const benchmarkingController = {
           .json({ message: "Benchmarking not found", success: false });
       }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
@@ -94,7 +151,6 @@ const benchmarkingController = {
           .json({ message: "Benchmarking not found", success: false });
       }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
@@ -118,7 +174,6 @@ const benchmarkingController = {
         });
       }
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },

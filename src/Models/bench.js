@@ -5,11 +5,16 @@ const benchmarkingSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      unique: true,
+      index: true,
     },
-
     country: {
       type: String,
       required: true,
+    },
+
+    user: {
+      type: Object,
     },
     status: {
       type: String,
@@ -35,11 +40,11 @@ const benchmarkingSchema = new mongoose.Schema(
       },
       default: 0,
     },
-    startdate: {
+    start_date: {
       type: Date,
       default: Date.now,
     },
-    enddate: {
+    end_date: {
       type: Date,
     },
   },
@@ -47,6 +52,9 @@ const benchmarkingSchema = new mongoose.Schema(
     timestamp: true,
   }
 );
+
+benchmarkingSchema.index({ title: 1 }, { unique: true });
+
 const Benchmarking = mongoose.model("Benchmarking", benchmarkingSchema);
 
 module.exports = Benchmarking;
