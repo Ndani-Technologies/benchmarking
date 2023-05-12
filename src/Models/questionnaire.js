@@ -31,7 +31,7 @@ const questionnaireSchema = new Schema({
   answerOptions: [
     {
       type: Schema.Types.ObjectId,
-      ref: "answer",
+      ref: "answers",
     },
   ],
 });

@@ -4,9 +4,11 @@ const Questionnaire = require("../Models/questionnaire");
 const { redisClient } = require("../middleware/redisClient");
 const devenv = require("../configs/dev");
 
+const cacheKey = "BENCHMARKINGS";
+
 const benchmarkingController = {
   getAllBenchmarking: async (req, res, next) => {
-    const cache = await redisClient.get("BENCHMARKINGS");
+    const cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -42,7 +44,7 @@ const benchmarkingController = {
         return;
       }
       if (benchmarkings.length > cacheLength) {
-        redisClient.set("BENCHMARKINGS", JSON.stringify(benchmarkings));
+        redisClient.set(cacheKey, JSON.stringify(benchmarkings));
         res.status(200).json({
           success: true,
           message: "benchmarkings found",
@@ -50,18 +52,49 @@ const benchmarkingController = {
         });
       }
       if (benchmarkings.length < cacheLength) {
+        redisClient.del(cacheKey);
+        redisClient.set(cacheKey, JSON.stringify(benchmarkings));
         res.status(200).json({
           success: true,
           message: "benchmarkings found",
           data: JSON.parse(cache),
         });
       }
+      let benchmarkTitleCheck = true;
       if (benchmarkings.length === cacheLength) {
-        res.status(200).json({
-          success: true,
-          message: "benchmarkings found",
-          data: JSON.parse(cache),
-        });
+        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
+        for (const _id in benchmarkings) {
+          // eslint-disable-next-line no-prototype-builtins
+          if (benchmarkings.hasOwnProperty(_id)) {
+            // Check if the user exists in cache object
+            // eslint-disable-next-line no-prototype-builtins
+            if (cacheObj.hasOwnProperty(_id)) {
+              // eslint-disable-next-line no-underscore-dangle
+              const benchmarkingTitle = benchmarkings[_id].title;
+              // eslint-disable-next-line no-underscore-dangle
+              const cacheTitle = cacheObj[_id].title;
+              // Compare the email values
+              if (benchmarkingTitle !== cacheTitle) {
+                benchmarkTitleCheck = false;
+              }
+            }
+          }
+        }
+        if (benchmarkTitleCheck === false) {
+          redisClient.del(cacheKey);
+          redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+          res.status(200).json({
+            success: true,
+            message: "benchmarkings found",
+            data: benchmarkings,
+          });
+        } else {
+          res.status(200).json({
+            success: true,
+            message: "benchmarkings found",
+            data: JSON.parse(cache),
+          });
+        }
       }
     } catch (error) {
       next(error);
@@ -97,7 +130,6 @@ const benchmarkingController = {
       if (user.data.success) {
         const questionnaire = await Questionnaire.find({});
         const benchTitle = await Benchmarking.find({ title });
-        console.log(benchTitle);
         if (benchTitle && benchTitle.length > 0) {
           res
             .status(500)
@@ -120,7 +152,6 @@ const benchmarkingController = {
         res.status(404).json({ message: "User not found", success: false });
       }
     } catch (error) {
-      console.log("error:", error);
       res.status(404).json({ message: "error occured ", success: false });
     }
   },
@@ -132,6 +163,23 @@ const benchmarkingController = {
         new: true,
       });
       if (benchmarking) {
+        redisClient.del(cacheKey);
+        const allBenchmarkings = await Benchmarking.find()
+          .populate("questionnaire")
+          .populate({
+            path: "questionnaire",
+            populate: [
+              {
+                path: "category",
+                model: "Category",
+              },
+              {
+                path: "answerOptions",
+                model: "answers",
+              },
+            ],
+          });
+        redisClient.set(cacheKey, JSON.stringify(allBenchmarkings));
         res
           .status(200)
           .json({ message: "Benchmarking updated", success: true });
@@ -150,6 +198,23 @@ const benchmarkingController = {
     try {
       const benchmarking = await Benchmarking.findByIdAndDelete(id);
       if (benchmarking) {
+        redisClient.del(cacheKey);
+        const allBenchmarkings = await Benchmarking.find()
+          .populate("questionnaire")
+          .populate({
+            path: "questionnaire",
+            populate: [
+              {
+                path: "category",
+                model: "Category",
+              },
+              {
+                path: "answerOptions",
+                model: "answers",
+              },
+            ],
+          });
+        redisClient.set(cacheKey, JSON.stringify(allBenchmarkings));
         res
           .status(200)
           .json({ message: "Benchmarking deleted", success: true });

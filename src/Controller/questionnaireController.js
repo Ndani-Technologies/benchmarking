@@ -2,9 +2,11 @@ const axios = require("../../node_modules/axios/dist/node/axios.cjs");
 const { redisClient } = require("../middleware/redisClient");
 const Questionnaire = require("../Models/questionnaire");
 
+const cacheKey = "QUESTIONNAIRE";
+
 const QuestionnaireController = {
   async getAllquestionnaire(req, res, next) {
-    const cache = await redisClient.get("QUESTIONNAIRE");
+    const cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -27,7 +29,7 @@ const QuestionnaireController = {
         return;
       }
       if (questionnaire.length > cacheLength) {
-        redisClient.set("QUESTIONNAIRE", JSON.stringify(questionnaire));
+        redisClient.set(cacheKey, JSON.stringify(questionnaire));
         res.status(200).json({
           success: true,
           message: "questionnaire found",
@@ -35,20 +37,52 @@ const QuestionnaireController = {
         });
       }
       if (questionnaire.length < cacheLength) {
+        redisClient.del(cacheKey);
+        redisClient.set(cacheKey, JSON.stringify(questionnaire));
         res.status(200).json({
           success: true,
           message: "questionnaire found",
           data: JSON.parse(cache),
         });
       }
+      let questionnaireTitleCheck = true;
       if (questionnaire.length === cacheLength) {
-        res.status(200).json({
-          success: true,
-          message: "questionnaire found",
-          data: JSON.parse(cache),
-        });
+        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
+        for (const _id in questionnaire) {
+          // eslint-disable-next-line no-prototype-builtins
+          if (questionnaire.hasOwnProperty(_id)) {
+            // Check if the user exists in cache object
+            // eslint-disable-next-line no-prototype-builtins
+            if (cacheObj.hasOwnProperty(_id)) {
+              // eslint-disable-next-line no-underscore-dangle
+              const questionnaireTitle = questionnaire[_id].title;
+              // eslint-disable-next-line no-underscore-dangle
+              const cacheTitle = cacheObj[_id].title;
+              // Compare the email values
+              if (questionnaireTitle !== cacheTitle) {
+                questionnaireTitleCheck = false;
+              }
+            }
+          }
+        }
+        if (questionnaireTitleCheck === false) {
+          redisClient.del(cacheKey);
+          redisClient.set(cacheKey, JSON.stringify(questionnaire));
+          res.status(200).json({
+            success: true,
+            message: "questionnaires found",
+            data: questionnaire,
+          });
+        } else {
+          res.status(200).json({
+            success: true,
+            message: "questionnaires found",
+            data: JSON.parse(cache),
+          });
+        }
       }
     } catch (err) {
+      console.log("error", err);
       next(err);
     }
   },
@@ -117,6 +151,11 @@ const QuestionnaireController = {
         questionnaire.answerOptions = req.body.answerOptions;
       }
       await questionnaire.save();
+      redisClient.del(cacheKey);
+      const allQuestionnaires = await Questionnaire.find()
+        .populate("category")
+        .populate("answerOptions");
+      redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,
         message: "Successfully updated questionnaire",
@@ -137,6 +176,11 @@ const QuestionnaireController = {
           .json({ success: false, message: "Cannot find Questionnaire" });
       }
 
+      redisClient.del(cacheKey);
+      const allQuestionnaires = await Questionnaire.find()
+        .populate("category")
+        .populate("answerOptions");
+      redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,
         message: "Successfully deleted Questionnaire",
