@@ -96,7 +96,14 @@ const benchmarkingController = {
       const user = await axios.get(`${devenv.userUrl}user/${userId}`);
       if (user.data.success) {
         const questionnaire = await Questionnaire.find({});
-
+        const benchTitle = await Benchmarking.find({ title });
+        console.log(benchTitle);
+        if (benchTitle && benchTitle.length > 0) {
+          res
+            .status(500)
+            .json({ message: "duplication of title", success: false });
+          return;
+        }
         const benchmarking = await Benchmarking.create({
           title,
           country,
@@ -113,7 +120,8 @@ const benchmarkingController = {
         res.status(404).json({ message: "User not found", success: false });
       }
     } catch (error) {
-      res.status(404).json({ message: error, success: false });
+      console.log("error:", error);
+      res.status(404).json({ message: "error occured ", success: false });
     }
   },
 
