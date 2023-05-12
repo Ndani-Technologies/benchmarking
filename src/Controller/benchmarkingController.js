@@ -8,7 +8,7 @@ const cacheKey = "BENCHMARKINGS";
 
 const benchmarkingController = {
   getAllBenchmarking: async (req, res, next) => {
-    const cache = await redisClient.get(cacheKey);
+    let cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -51,50 +51,15 @@ const benchmarkingController = {
           data: benchmarkings,
         });
       }
-      if (benchmarkings.length < cacheLength) {
+      if (benchmarkings.length <= cacheLength) {
         redisClient.del(cacheKey);
         redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+        cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
           message: "benchmarkings found",
           data: JSON.parse(cache),
         });
-      }
-      let benchmarkTitleCheck = true;
-      if (benchmarkings.length === cacheLength) {
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
-        for (const _id in benchmarkings) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (benchmarkings.hasOwnProperty(_id)) {
-            // Check if the user exists in cache object
-            // eslint-disable-next-line no-prototype-builtins
-            if (cacheObj.hasOwnProperty(_id)) {
-              // eslint-disable-next-line no-underscore-dangle
-              const benchmarkingTitle = benchmarkings[_id].title;
-              // eslint-disable-next-line no-underscore-dangle
-              const cacheTitle = cacheObj[_id].title;
-              // Compare the email values
-              if (benchmarkingTitle !== cacheTitle) {
-                benchmarkTitleCheck = false;
-              }
-            }
-          }
-        }
-        if (benchmarkTitleCheck === false) {
-          redisClient.del(cacheKey);
-          redisClient.set(cacheKey, JSON.stringify(benchmarkings));
-          res.status(200).json({
-            success: true,
-            message: "benchmarkings found",
-            data: benchmarkings,
-          });
-        } else {
-          res.status(200).json({
-            success: true,
-            message: "benchmarkings found",
-            data: JSON.parse(cache),
-          });
-        }
       }
     } catch (error) {
       next(error);

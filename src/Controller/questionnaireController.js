@@ -6,7 +6,7 @@ const cacheKey = "QUESTIONNAIRE";
 
 const QuestionnaireController = {
   async getAllquestionnaire(req, res, next) {
-    const cache = await redisClient.get(cacheKey);
+    let cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -36,50 +36,15 @@ const QuestionnaireController = {
           data: questionnaire,
         });
       }
-      if (questionnaire.length < cacheLength) {
+      if (questionnaire.length <= cacheLength) {
         redisClient.del(cacheKey);
         redisClient.set(cacheKey, JSON.stringify(questionnaire));
+        cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
           message: "questionnaire found",
           data: JSON.parse(cache),
         });
-      }
-      let questionnaireTitleCheck = true;
-      if (questionnaire.length === cacheLength) {
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
-        for (const _id in questionnaire) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (questionnaire.hasOwnProperty(_id)) {
-            // Check if the user exists in cache object
-            // eslint-disable-next-line no-prototype-builtins
-            if (cacheObj.hasOwnProperty(_id)) {
-              // eslint-disable-next-line no-underscore-dangle
-              const questionnaireTitle = questionnaire[_id].title;
-              // eslint-disable-next-line no-underscore-dangle
-              const cacheTitle = cacheObj[_id].title;
-              // Compare the email values
-              if (questionnaireTitle !== cacheTitle) {
-                questionnaireTitleCheck = false;
-              }
-            }
-          }
-        }
-        if (questionnaireTitleCheck === false) {
-          redisClient.del(cacheKey);
-          redisClient.set(cacheKey, JSON.stringify(questionnaire));
-          res.status(200).json({
-            success: true,
-            message: "questionnaires found",
-            data: questionnaire,
-          });
-        } else {
-          res.status(200).json({
-            success: true,
-            message: "questionnaires found",
-            data: JSON.parse(cache),
-          });
-        }
       }
     } catch (err) {
       console.log("error", err);

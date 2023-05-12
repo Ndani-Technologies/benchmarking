@@ -5,7 +5,7 @@ const cacheKey = "CATEGORIES";
 
 const categoryController = {
   getAllCategories: async (req, res, next) => {
-    const cache = await redisClient.get(cacheKey);
+    let cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -33,50 +33,15 @@ const categoryController = {
           data: categories,
         });
       }
-      if (categories.length < cacheLength) {
+      if (categories.length <= cacheLength) {
         redisClient.del(cacheKey);
         redisClient.set(cacheKey, JSON.stringify(categories));
+        cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
           message: "categories found",
           data: JSON.parse(cache),
         });
-      }
-      let categoryTitleCheck = true;
-      if (categories.length === cacheLength) {
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
-        for (const _id in categories) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (categories.hasOwnProperty(_id)) {
-            // Check if the user exists in cache object
-            // eslint-disable-next-line no-prototype-builtins
-            if (cacheObj.hasOwnProperty(_id)) {
-              // eslint-disable-next-line no-underscore-dangle
-              const categoryTitle = categories[_id].titleEng;
-              // eslint-disable-next-line no-underscore-dangle
-              const cacheTitle = cacheObj[_id].titleEng;
-              // Compare the email values
-              if (categoryTitle !== cacheTitle) {
-                categoryTitleCheck = false;
-              }
-            }
-          }
-        }
-        if (categoryTitleCheck === false) {
-          redisClient.del(cacheKey);
-          redisClient.set(cacheKey, JSON.stringify(categories));
-          res.status(200).json({
-            success: true,
-            message: "categories found",
-            data: categories,
-          });
-        } else {
-          res.status(200).json({
-            success: true,
-            message: "categories found",
-            data: JSON.parse(cache),
-          });
-        }
       }
     } catch (err) {
       next(err);

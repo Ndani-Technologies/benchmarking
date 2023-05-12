@@ -5,7 +5,7 @@ const cacheKey = "ANSWERS";
 
 const answerController = {
   getAllAnswers: async (req, res, next) => {
-    const cache = await redisClient.get(cacheKey);
+    let cache = await redisClient.get(cacheKey);
     let cacheObj = "";
     let cacheLength = 0;
     if (cache != null) {
@@ -32,50 +32,15 @@ const answerController = {
           data: answers,
         });
       }
-      if (answers.length < cacheLength) {
+      if (answers.length <= cacheLength) {
         redisClient.del(cacheKey);
         redisClient.set(cacheKey, JSON.stringify(answers));
+        cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
           message: "answers found",
           data: JSON.parse(cache),
         });
-      }
-      let answerOptionCheck = true;
-      if (answers.length === cacheLength) {
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in, no-underscore-dangle
-        for (const _id in answers) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (answers.hasOwnProperty(_id)) {
-            // Check if the user exists in cache object
-            // eslint-disable-next-line no-prototype-builtins
-            if (cacheObj.hasOwnProperty(_id)) {
-              // eslint-disable-next-line no-underscore-dangle
-              const answerOptionValue = answers[_id].answerOption;
-              // eslint-disable-next-line no-underscore-dangle
-              const cacheanswerOptionValue = cacheObj[_id].answerOption;
-              // Compare the email values
-              if (answerOptionValue !== cacheanswerOptionValue) {
-                answerOptionCheck = false;
-              }
-            }
-          }
-        }
-        if (answerOptionCheck === false) {
-          redisClient.del(cacheKey);
-          redisClient.set(cacheKey, JSON.stringify(answers));
-          res.status(200).json({
-            success: true,
-            message: "answers found",
-            data: answers,
-          });
-        } else {
-          res.status(200).json({
-            success: true,
-            message: "answers found",
-            data: JSON.parse(cache),
-          });
-        }
       }
     } catch (error) {
       next(error);
