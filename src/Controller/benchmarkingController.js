@@ -69,9 +69,23 @@ const benchmarkingController = {
   getBenchmarkingById: async (req, res, next) => {
     const { id } = req.params;
     try {
-      const benchmarking = await Benchmarking.findById(id).populate(
-        "questionnaire"
-      );
+      const benchmarking = await Benchmarking.findById(id)
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        });
       if (benchmarking) {
         res.status(200).json({
           message: "Benchmarking retrieved",
@@ -367,6 +381,61 @@ const benchmarkingController = {
         data: benchmarks,
       });
     } catch (error) {
+      next(error);
+    }
+  },
+  updateUserResponse: async (req, res, next) => {
+    const { id } = req.params;
+    // eslint-disable-next-line
+    const { user_resp } = req.body;
+    let totalAnswers = 0;
+
+    const benchmarking = await Benchmarking.findById(id)
+      .populate("questionnaire")
+      .populate({
+        path: "questionnaire",
+        populate: [
+          {
+            path: "category",
+            model: "Category",
+            // select: 'language titleEng titleAr titleSp titleFr'
+          },
+          {
+            path: "answerOptions",
+            model: "answers",
+            // select: 'language includeExplanation answerAttempt'
+          },
+        ],
+      });
+    if (!benchmarking) {
+      return res
+        .status(404)
+        .send({ success: false, message: "Benchmarking not found" });
+    }
+    const { questionnaire } = benchmarking;
+
+    console.log("user_resp", user_resp, req.body);
+    req.body.user_resp.forEach((answer) => {
+      if (answer.selectedOption) {
+        totalAnswers += 1;
+      }
+    });
+
+    const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+    try {
+      const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
+        id,
+        // eslint-disable-next-line
+        { user_resp, completionLevel },
+        { new: true }
+      );
+      res.send({
+        success: true,
+        message: "User Response updated",
+        data: updatedBenchmarking,
+      });
+    } catch (error) {
+      console.error(error);
       next(error);
     }
   },

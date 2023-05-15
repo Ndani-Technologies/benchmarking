@@ -8,7 +8,7 @@ const categorySchema = new mongoose.Schema({
   },
   titleEng: {
     type: String,
-    required: true,
+    default: "English",
     unique: true,
   },
   titleAr: {

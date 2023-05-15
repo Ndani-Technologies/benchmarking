@@ -9,6 +9,10 @@ router.post("/", benchmarkingController.createBenchmarking);
 router.put("/:id", benchmarkingController.updateBenchmarkingById);
 router.delete("/:id", benchmarkingController.deleteBenchmarkingById);
 router.get("/title/:title", benchmarkingController.getBenchmarkingByTitle);
+router.patch(
+  "/update_user_resp/:id",
+  benchmarkingController.updateUserResponse
+);
 router.get(
   "/country/:country",
   benchmarkingController.getBenchmarkingByCountry

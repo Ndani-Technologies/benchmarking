@@ -31,7 +31,7 @@ const benchmarkingSchema = new mongoose.Schema(
     completionLevel: {
       type: Number,
       min: 0,
-      max: 1,
+      max: 100,
       get(value) {
         return `${(value * 100).toFixed(2)}%`;
       },
@@ -47,6 +47,22 @@ const benchmarkingSchema = new mongoose.Schema(
     end_date: {
       type: Date,
     },
+    user_resp: [
+      {
+        questionId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "questionnaire",
+        },
+        selectedOption: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "answers",
+        },
+        comment: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
   },
   {
     timestamp: true,
