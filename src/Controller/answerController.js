@@ -25,7 +25,7 @@ const answerController = {
         return;
       }
       if (answers.length > cacheLength) {
-        redisClient.set(cacheKey, JSON.stringify(answers));
+        await redisClient.set(cacheKey, JSON.stringify(answers));
         res.status(200).json({
           success: true,
           message: "answers found",
@@ -33,8 +33,8 @@ const answerController = {
         });
       }
       if (answers.length <= cacheLength) {
-        redisClient.del(cacheKey);
-        redisClient.set(cacheKey, JSON.stringify(answers));
+        await redisClient.del(cacheKey);
+        await redisClient.set(cacheKey, JSON.stringify(answers));
         cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
@@ -94,9 +94,9 @@ const answerController = {
         new: true,
       });
       if (answer) {
-        redisClient.del(cacheKey);
+        await redisClient.del(cacheKey);
         const allAnswers = await Answer.find();
-        redisClient.set(cacheKey, JSON.stringify(allAnswers));
+        await redisClient.set(cacheKey, JSON.stringify(allAnswers));
         res.status(200).json({ message: "Answer updated", success: true });
       } else {
         res.status(404).json({ message: "Answer not found", success: false });
@@ -112,9 +112,9 @@ const answerController = {
     try {
       const answer = await Answer.findByIdAndDelete(id);
       if (answer) {
-        redisClient.del(cacheKey);
+        await redisClient.del(cacheKey);
         const allAnswers = await Answer.find();
-        redisClient.set(cacheKey, JSON.stringify(allAnswers));
+        await redisClient.set(cacheKey, JSON.stringify(allAnswers));
         res.status(200).json({ message: "Answer deleted", success: true });
       } else {
         res.status(404).json({ message: "Answer not found", success: false });

@@ -13,6 +13,11 @@ router.patch(
   "/update_user_resp/:id",
   benchmarkingController.updateUserResponse
 );
+router.get("/summary/:id", benchmarkingController.getBenchmarkingSummary);
+router.get(
+  "/summaryByUsers/:id",
+  benchmarkingController.getBenchmarkingSummaryByUser
+);
 router.get(
   "/country/:country",
   benchmarkingController.getBenchmarkingByCountry
@@ -21,6 +26,10 @@ router.get("/status/:status", benchmarkingController.getBenchmarkingByStatus);
 router.get(
   "/startdate/:startdate/enddate/:enddate",
   benchmarkingController.getBenchmarkingBetweenDate
+);
+router.get(
+  "/categories/:userId/:benchId",
+  benchmarkingController.getCategories
 );
 router.get(
   "/startrange/:startrange/endrange/:endrange",

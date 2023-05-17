@@ -29,7 +29,7 @@ const QuestionnaireController = {
         return;
       }
       if (questionnaire.length > cacheLength) {
-        redisClient.set(cacheKey, JSON.stringify(questionnaire));
+        await redisClient.set(cacheKey, JSON.stringify(questionnaire));
         res.status(200).json({
           success: true,
           message: "questionnaire found",
@@ -37,8 +37,8 @@ const QuestionnaireController = {
         });
       }
       if (questionnaire.length <= cacheLength) {
-        redisClient.del(cacheKey);
-        redisClient.set(cacheKey, JSON.stringify(questionnaire));
+        await redisClient.del(cacheKey);
+        await redisClient.set(cacheKey, JSON.stringify(questionnaire));
         cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
@@ -116,11 +116,11 @@ const QuestionnaireController = {
         questionnaire.answerOptions = req.body.answerOptions;
       }
       await questionnaire.save();
-      redisClient.del(cacheKey);
+      await redisClient.del(cacheKey);
       const allQuestionnaires = await Questionnaire.find()
         .populate("category")
         .populate("answerOptions");
-      redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
+      await redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,
         message: "Successfully updated questionnaire",
@@ -141,11 +141,11 @@ const QuestionnaireController = {
           .json({ success: false, message: "Cannot find Questionnaire" });
       }
 
-      redisClient.del(cacheKey);
+      await redisClient.del(cacheKey);
       const allQuestionnaires = await Questionnaire.find()
         .populate("category")
         .populate("answerOptions");
-      redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
+      await redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,
         message: "Successfully deleted Questionnaire",

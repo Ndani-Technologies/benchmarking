@@ -3,8 +3,9 @@ const { createLogger, format, transports } = require("winston");
 const { combine, timestamp, label, prettyPrint } = format;
 
 const logger = createLogger({
+  level: "debug",
   format: combine(
-    label({ label: "backend service 1" }),
+    label({ label: "Benchmarking-services" }),
     timestamp(),
     prettyPrint()
   ),

@@ -19,6 +19,7 @@ const category = require("./Routes/CategoryRouter");
 const questionnaire = require("./Routes/questionnaireRouter");
 const benchmarking = require("./Routes/benchmarkingRouter");
 const answer = require("./Routes/answerRouter");
+const logger = require("./middleware/logger");
 
 const url = env.mongoUrl;
 const connect = mongoose.connect(url);
@@ -77,6 +78,13 @@ app.get("/api-docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
+
+app.use((req, res, next) => {
+  // Log the request
+  logger.info(`[${req.method}] ${req.originalUrl}`);
+  next();
+});
+
 app.use("/api/v1/category", category);
 app.use("/api/v1/questionnaire", questionnaire);
 app.use("/api/v1/benchmarking", benchmarking);

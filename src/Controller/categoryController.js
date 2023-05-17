@@ -26,7 +26,7 @@ const categoryController = {
         return;
       }
       if (categories.length > cacheLength) {
-        redisClient.set(cacheKey, JSON.stringify(categories));
+        await redisClient.set(cacheKey, JSON.stringify(categories));
         res.status(200).json({
           success: true,
           message: "categories found",
@@ -34,8 +34,8 @@ const categoryController = {
         });
       }
       if (categories.length <= cacheLength) {
-        redisClient.del(cacheKey);
-        redisClient.set(cacheKey, JSON.stringify(categories));
+        await redisClient.del(cacheKey);
+        await redisClient.set(cacheKey, JSON.stringify(categories));
         cache = await redisClient.get(cacheKey);
         res.status(200).json({
           success: true,
@@ -120,9 +120,9 @@ const categoryController = {
         new: true,
       });
       if (category) {
-        redisClient.del(cacheKey);
+        await redisClient.del(cacheKey);
         const allCategories = await Category.find();
-        redisClient.set(cacheKey, JSON.stringify(allCategories));
+        await redisClient.set(cacheKey, JSON.stringify(allCategories));
         res.status(200).json({ message: "Category updated", success: true });
       } else {
         res.status(404).json({ message: "Category not found", success: false });
@@ -138,9 +138,9 @@ const categoryController = {
     try {
       const category = await Category.findByIdAndDelete(id);
       if (category) {
-        redisClient.del(cacheKey);
+        await redisClient.del(cacheKey);
         const allCategories = await Category.find();
-        redisClient.set(cacheKey, JSON.stringify(allCategories));
+        await redisClient.set(cacheKey, JSON.stringify(allCategories));
         res.status(200).json({ message: "Category deleted", success: true });
       } else {
         res.status(404).json({ message: "Category not found", success: false });
