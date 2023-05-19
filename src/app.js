@@ -85,10 +85,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/v1/category", category);
-app.use("/api/v1/questionnaire", questionnaire);
-app.use("/api/v1/benchmarking", benchmarking);
-app.use("/api/v1/answer", answer);
+
+app.use("/api/v1/bench/category", category);
+app.use("/api/v1/bench/questionnaire", questionnaire);
+app.use("/api/v1/bench/benchmarking", benchmarking);
+app.use("/api/v1/bench/answer", answer);
 
 app.use((req, res, next) => {
   const err = new Error();
