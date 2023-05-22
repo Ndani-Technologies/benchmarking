@@ -5,7 +5,7 @@ const QuestionnaireController = require("../Controller/questionnaireController")
 
 router.get("/", QuestionnaireController.getAllquestionnaire);
 router.get("/:id", QuestionnaireController.getQuestionnaire);
-router.post("/:id", QuestionnaireController.createQuestionnaire);
+router.post("/", QuestionnaireController.createQuestionnaire);
 router.put("/:id", QuestionnaireController.updateQuestionnaire);
 router.delete("/:id", QuestionnaireController.deleteQuestionnaire);
 router.get(
