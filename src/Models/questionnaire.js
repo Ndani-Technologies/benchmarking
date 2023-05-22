@@ -34,6 +34,14 @@ const questionnaireSchema = new Schema({
       ref: "answers",
     },
   ],
+  whoHasAnswer: [
+    {
+      type: Object,
+    },
+  ],
+  response: {
+    type: Number,
+  },
 });
 
 const questionnaire = mongoose.model("questionnaire", questionnaireSchema);
