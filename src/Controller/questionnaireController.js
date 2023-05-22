@@ -73,14 +73,14 @@ const QuestionnaireController = {
   },
 
   async createQuestionnaire(req, res, next) {
-    const userId = req.params.id;
-    req.body.whoHasAnswer = userId;
-    const lastquestion = await Questionnaire.findOne().sort({ _id: -1 });
-    if (lastquestion.response) {
-      req.body.response = lastquestion.response + 1;
-    } else {
-      req.body.response = 1;
-    }
+    // const userId = req.params.id;
+    // req.body.whoHasAnswer = userId;
+    // const lastquestion = await Questionnaire.findOne().sort({ _id: -1 });
+    // if (lastquestion.response) {
+    //   req.body.response = lastquestion.response + 1;
+    // } else {
+    //   req.body.response = 1;
+    // }
 
     const questionnaire = new Questionnaire(req.body);
     try {
