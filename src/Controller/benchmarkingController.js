@@ -37,6 +37,7 @@ const benchmarkingController = {
             },
           ],
         });
+
       if (benchmarkings === "") {
         res.status(404).json({
           success: false,
@@ -56,6 +57,7 @@ const benchmarkingController = {
         await redisClient.del(cacheKey);
         await redisClient.set(cacheKey, JSON.stringify(benchmarkings));
         cache = await redisClient.get(cacheKey);
+
         res.status(200).json({
           success: true,
           message: "benchmarkings found",
@@ -87,11 +89,25 @@ const benchmarkingController = {
             },
           ],
         });
+
+      const fieldCount = Object.keys(Benchmarking.schema.paths).length;
+      console.log("field count = ", fieldCount);
+      let counter = 0;
+      // eslint-disable-next-line array-callback-return
+      Object.keys(benchmarking).reduce((count, key) => {
+        if (benchmarking[key]) {
+          counter += 1;
+        }
+      }, 0);
+      console.log("filled count = ", counter);
+      const percentage = (counter / fieldCount) * 100;
+
       if (benchmarking) {
         res.status(200).json({
           message: "Benchmarking retrieved",
           success: true,
           data: benchmarking,
+          percentage,
         });
       } else {
         res
@@ -430,6 +446,10 @@ const benchmarkingController = {
     });
     const completionLevel = (totalAnswers / questionnaire.length) * 10000;
     try {
+      if (completionLevel === 100) {
+        // eslint-disable-next-line camelcase
+        user_resp.end_date = Date.now();
+      }
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
@@ -497,6 +517,7 @@ const benchmarkingController = {
     count = 0;
     // eslint-disable-next-line camelcase
     await Promise.all(
+      // eslint-disable-next-line camelcase
       user_resp.map(async (answerOptions) => {
         const answ = await Answer.find(answerOptions.selectedOption).select(
           "answerOption includeExplanation"
@@ -531,6 +552,9 @@ const benchmarkingController = {
     );
 
     const dataReturn = {
+      title: benchmarking.title,
+      country: benchmarking.country,
+      status: benchmarking.status,
       noOfQuestions: totalNumberOfQuestions,
       attemptQuestions: totalNumberOfQusetionAttempted,
       answerYes: count1,
@@ -539,6 +563,8 @@ const benchmarkingController = {
       answerDontKnow: count4,
       answersComments: answerComment,
       completionLevel,
+      startDate: benchmarking.start_date,
+      endDate: benchmarking.end_date,
     };
     res.status(200).json({
       success: true,
@@ -575,6 +601,7 @@ const benchmarkingController = {
     // eslint-disable-next-line camelcase
     const {
       questionnaire,
+      // eslint-disable-next-line camelcase
       user_resp,
       title,
       country,
@@ -604,6 +631,7 @@ const benchmarkingController = {
     count = 0;
     // eslint-disable-next-line camelcase
     await Promise.all(
+      // eslint-disable-next-line camelcase
       user_resp.map(async (answerOptions) => {
         const answ = await Answer.find(answerOptions.selectedOption).select(
           "answerOption includeExplanation"
@@ -658,6 +686,62 @@ const benchmarkingController = {
       message: "record retrieved",
       data: dataReturn,
     });
+  },
+  getPercentage: async (req, res, next) => {
+    try {
+      const benchmarkings = await Benchmarking.find()
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        });
+      let length = 0;
+      let userResponseLength = 0;
+      let questionLength = 0;
+      let avgPercentage = 0;
+      let totalBench = 0;
+      benchmarkings.forEach((bench) => {
+        questionLength = bench.questionnaire.length;
+        if (
+          bench.user_resp === [] ||
+          bench.user_resp === "" ||
+          bench.user_resp.length === 0
+        ) {
+          totalBench += 0;
+          userResponseLength = 0;
+        } else {
+          userResponseLength = bench.user_resp.length;
+          totalBench += (questionLength / userResponseLength) * 100;
+        }
+
+        benchmarkings.push({
+          benchmarkingPercentage: (userResponseLength / questionLength) * 100,
+        });
+        length += 1;
+      });
+      avgPercentage = totalBench / length;
+      benchmarkings.push({ benchmarkingAvgPercentage: avgPercentage });
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Percentage of Benchmarks ",
+          data: benchmarkings,
+        });
+    } catch (error) {
+      next(error);
+    }
   },
 };
 
