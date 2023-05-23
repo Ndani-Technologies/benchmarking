@@ -71,7 +71,37 @@ const QuestionnaireController = {
       next(err);
     }
   },
-
+  async whohasAnswer(req, res, next) {
+    try {
+      const totalUsers = req.body.whoHasAnswer.userId.length;
+      const { id } = req.params;
+      req.body.whoHasAnswer.totalUsers = totalUsers;
+      const { userId } = req.body.whoHasAnswer;
+      Questionnaire.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { "whoHasAnswer.userId": { $each: userId } },
+          $set: { "whoHasAnswer.totalUsers": totalUsers },
+        },
+        { new: true }
+      ).then((questionnaire) => {
+        if (questionnaire) {
+          res.status(200).json({
+            success: true,
+            message: "successfully updated ",
+            data: questionnaire,
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            message: "no questionnaire found ",
+          });
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
   async createQuestionnaire(req, res, next) {
     // const userId = req.params.id;
     // req.body.whoHasAnswer = userId;

@@ -10,9 +10,11 @@ router.put("/:id", benchmarkingController.updateBenchmarkingById);
 router.delete("/:id", benchmarkingController.deleteBenchmarkingById);
 router.get("/title/:title", benchmarkingController.getBenchmarkingByTitle);
 router.patch(
-  "/update_user_resp/:id",
-  benchmarkingController.updateUserResponse
+  "/user_resp_submit/:id",
+  benchmarkingController.submitUserResponse
 );
+router.patch("/user_resp_save/:id", benchmarkingController.saveUserResponse);
+
 
 router.get("/summary/:id", benchmarkingController.getBenchmarkingSummary);
 router.get(

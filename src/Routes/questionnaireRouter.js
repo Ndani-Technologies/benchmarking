@@ -13,5 +13,5 @@ router.get(
   QuestionnaireController.getQuestionnaireByLanguage
 );
 router.get("/getuserById/:id", QuestionnaireController.getUserById);
-
+router.post("/whohasanswer/:id", QuestionnaireController.whohasAnswer);
 module.exports = router;

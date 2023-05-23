@@ -19,6 +19,7 @@ const questionnaireSchema = new Schema({
   title: {
     type: String,
     required: true,
+    unique: true,
   },
   description: {
     type: String,
@@ -34,11 +35,18 @@ const questionnaireSchema = new Schema({
       ref: "answers",
     },
   ],
-  whoHasAnswer: [
-    {
-      type: Object,
+  whoHasAnswer: {
+    userId: [
+      {
+        type: Object,
+      },
+    ],
+    totalUsers: {
+      type: Number,
+      default: 0,
     },
-  ],
+  },
+
   response: {
     type: Number,
   },
