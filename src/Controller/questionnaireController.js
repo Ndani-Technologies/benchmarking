@@ -74,10 +74,9 @@ const QuestionnaireController = {
   async whohasAnswer(req, res, next) {
     try {
       const totalUsers = req.body.whoHasAnswer.userId.length;
-      const { id } = req.body;
+      const { id } = req.params;
       req.body.whoHasAnswer.totalUsers = totalUsers;
       const { userId } = req.body.whoHasAnswer;
-      console.log(userId);
       Questionnaire.findByIdAndUpdate(
         id,
         {
@@ -92,11 +91,13 @@ const QuestionnaireController = {
             message: "successfully updated ",
             data: questionnaire,
           });
+        } else {
+          res.status(500).json({
+            success: false,
+            message: "no questionnaire found ",
+          });
         }
       });
-      res
-        .status(404)
-        .json({ success: false, message: "internal server error" });
     } catch (error) {
       next(error);
     }
