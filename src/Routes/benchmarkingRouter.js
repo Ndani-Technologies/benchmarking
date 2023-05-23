@@ -4,6 +4,10 @@ const router = express.Router();
 const benchmarkingController = require("../Controller/benchmarkingController");
 
 router.get("/", benchmarkingController.getAllBenchmarking);
+router.get(
+  "/getBenchmarksById/:id",
+  benchmarkingController.getAllBenchmarkingByUser
+);
 router.get("/:id", benchmarkingController.getBenchmarkingById);
 router.post("/", benchmarkingController.createBenchmarking);
 router.put("/:id", benchmarkingController.updateBenchmarkingById);
@@ -14,7 +18,6 @@ router.patch(
   benchmarkingController.submitUserResponse
 );
 router.patch("/user_resp_save/:id", benchmarkingController.saveUserResponse);
-
 
 router.get("/summary/:id", benchmarkingController.getBenchmarkingSummary);
 router.get(
