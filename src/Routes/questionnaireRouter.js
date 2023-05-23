@@ -18,4 +18,5 @@ router.get(
   "/compare/compareQuestions",
   QuestionnaireController.compareQuestions
 );
+
 module.exports = router;
