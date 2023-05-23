@@ -71,17 +71,37 @@ const QuestionnaireController = {
       next(err);
     }
   },
-
-  async createQuestionnaire(req, res, next) {
-    const userId = req.params.id;
-    req.body.whoHasAnswer = userId;
-    const lastquestion = await Questionnaire.findOne().sort({ _id: -1 });
-    if (lastquestion.response) {
-      req.body.response = lastquestion.response + 1;
-    } else {
-      req.body.response = 1;
+  async whohasAnswer(req, res, next) {
+    try {
+      const totalUsers = req.body.whoHasAnswer.userId.length;
+      const { id } = req.body;
+      req.body.whoHasAnswer.totalUsers = totalUsers;
+      const { userId } = req.body.whoHasAnswer;
+      console.log(userId);
+      Questionnaire.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { "whoHasAnswer.userId": { $each: userId } },
+          $set: { "whoHasAnswer.totalUsers": totalUsers },
+        },
+        { new: true }
+      ).then((questionnaire) => {
+        if (questionnaire) {
+          res.status(200).json({
+            success: true,
+            message: "successfully updated ",
+            data: questionnaire,
+          });
+        }
+      });
+      res
+        .status(404)
+        .json({ success: false, message: "internal server error" });
+    } catch (error) {
+      next(error);
     }
-
+  },
+  async createQuestionnaire(req, res, next) {
     const questionnaire = new Questionnaire(req.body);
     try {
       const newQuestionnaire = await questionnaire.save();

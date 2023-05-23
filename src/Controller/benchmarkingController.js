@@ -403,13 +403,9 @@ const benchmarkingController = {
       message: "get categories called",
     });
   },
-  updateUserResponse: async (req, res, next) => {
+  submitUserResponse: async (req, res, next) => {
     const { id } = req.params;
-    // const loggedUser = session.userLogin;
-    // console.log(session);
-    // console.log("userid  = ",loggedUser);
-    // const user = await axios.get(`${devenv.userUrl}user/${loggedUser._id}`);
-    // eslint-disable-next-line
+    // eslint-disable-next-line camelcase
     const { user_resp } = req.body;
     let totalAnswers = 0;
     const benchmarking = await Benchmarking.findById(id)
@@ -436,24 +432,30 @@ const benchmarkingController = {
     }
     const { questionnaire } = benchmarking;
 
-    // eslint-disable-next-line no-console
-    console.log("user_resp", user_resp, req.body);
-
     req.body.user_resp.forEach((answer) => {
       if (answer.selectedOption) {
         totalAnswers += 1;
       }
     });
     const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+
     try {
-      if (completionLevel === 100) {
-        // eslint-disable-next-line camelcase
-        user_resp.end_date = Date.now();
+      const status = "Active";
+      let endDate = "";
+      // eslint-disable-next-line camelcase
+      let end_date = "";
+      if (completionLevel === 10000) {
+        endDate = Date.now();
       }
+      if (endDate !== "") {
+        // eslint-disable-next-line camelcase
+        end_date = new Date(endDate);
+      }
+
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
-        { user_resp, completionLevel },
+        { user_resp, completionLevel, status, end_date },
         { new: true }
       );
       res.send({
@@ -462,8 +464,70 @@ const benchmarkingController = {
         data: updatedBenchmarking,
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      next(error);
+    }
+  },
+  saveUserResponse: async (req, res, next) => {
+    const { id } = req.params;
+    // eslint-disable-next-line camelcase
+    const { user_resp } = req.body;
+    let totalAnswers = 0;
+    const benchmarking = await Benchmarking.findById(id)
+      .populate("questionnaire")
+      .populate({
+        path: "questionnaire",
+        populate: [
+          {
+            path: "category",
+            model: "Category",
+            // select: 'language titleEng titleAr titleSp titleFr'
+          },
+          {
+            path: "answerOptions",
+            model: "answers",
+            // select: 'language includeExplanation answerAttempt'
+          },
+        ],
+      });
+    if (!benchmarking) {
+      return res
+        .status(404)
+        .send({ success: false, message: "Benchmarking not found" });
+    }
+    const { questionnaire } = benchmarking;
+
+    req.body.user_resp.forEach((answer) => {
+      if (answer.selectedOption) {
+        totalAnswers += 1;
+      }
+    });
+    const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+
+    try {
+      const status = "Active";
+      let endDate = "";
+      // eslint-disable-next-line camelcase
+      let end_date = "";
+      if (completionLevel === 10000) {
+        endDate = Date.now();
+      }
+      if (endDate !== "") {
+        // eslint-disable-next-line camelcase
+        end_date = new Date(endDate);
+      }
+
+      const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
+        id,
+        // eslint-disable-next-line
+        { user_resp, completionLevel, status, end_date },
+        { new: true }
+      );
+      res.send({
+        success: true,
+        message: "User Response updated",
+        data: updatedBenchmarking,
+      });
+    } catch (error) {
       next(error);
     }
   },
@@ -732,13 +796,11 @@ const benchmarkingController = {
       });
       avgPercentage = totalBench / length;
       benchmarkings.push({ benchmarkingAvgPercentage: avgPercentage });
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Percentage of Benchmarks ",
-          data: benchmarkings,
-        });
+      res.status(200).json({
+        success: true,
+        message: "Percentage of Benchmarks ",
+        data: benchmarkings,
+      });
     } catch (error) {
       next(error);
     }
