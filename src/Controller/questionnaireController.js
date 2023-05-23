@@ -154,6 +154,9 @@ const QuestionnaireController = {
       if (req.body.answerOptions != null) {
         questionnaire.answerOptions = req.body.answerOptions;
       }
+      if (req.body.whoHasAnswer != null) {
+        questionnaire.whoHasAnswer = req.body.whoHasAnswer;
+      }
       await questionnaire.save();
       await redisClient.del(cacheKey);
       const allQuestionnaires = await Questionnaire.find()
