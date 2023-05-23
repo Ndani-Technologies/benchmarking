@@ -68,7 +68,70 @@ const benchmarkingController = {
       next(error);
     }
   },
+  getAllBenchmarkingByUser: async (req, res, next) => {
+    let cache = await redisClient.get(cacheKey);
+    let cacheObj = "";
+    let cacheLength = 0;
+    if (cache != null) {
+      cacheObj = JSON.parse(cache);
+      cacheLength = Object.keys(cacheObj).length;
+    } else {
+      cacheLength = 0;
+      cacheObj = "";
+    }
+    try {
+      let benchmarkings = await Benchmarking.find()
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        });
+      // eslint-disable-next-line
+      benchmarkings = benchmarkings.filter(
+        // eslint-disable-next-line
+        (value) => value?.user?._id === req.params.id
+      );
+      if (benchmarkings === "") {
+        res.status(404).json({
+          success: false,
+          message: "benchmarkings not found",
+        });
+        return;
+      }
+      if (benchmarkings.length > cacheLength) {
+        await redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: benchmarkings,
+        });
+      }
+      if (benchmarkings.length <= cacheLength) {
+        await redisClient.del(cacheKey);
+        await redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+        cache = await redisClient.get(cacheKey);
 
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: JSON.parse(cache),
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   getBenchmarkingById: async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -516,7 +579,6 @@ const benchmarkingController = {
         end_date = new Date(endDate);
       }
 
-
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
@@ -771,38 +833,25 @@ const benchmarkingController = {
             },
           ],
         });
-      let length = 0;
-      let userResponseLength = 0;
-      let questionLength = 0;
-      let avgPercentage = 0;
-      let totalBench = 0;
-      benchmarkings.forEach((bench) => {
-        questionLength = bench.questionnaire.length;
-        if (
-          bench.user_resp === [] ||
-          bench.user_resp === "" ||
-          bench.user_resp.length === 0
-        ) {
-          totalBench += 0;
-          userResponseLength = 0;
-        } else {
-          userResponseLength = bench.user_resp.length;
-          totalBench += (questionLength / userResponseLength) * 100;
-        }
-
-        benchmarkings.push({
-          benchmarkingPercentage: (userResponseLength / questionLength) * 100,
-        });
-        length += 1;
+      // eslint-disable-next-line
+      benchmarkings = benchmarkings.filter(
+        // eslint-disable-next-line
+        (value) => value?.user?._id === req.params.id
+      );
+      let totalCompletetionLevel = 0;
+      benchmarkings.forEach((value) => {
+        // eslint-disable-next-line
+        totalCompletetionLevel += parseInt(
+          value.completionLevel.split("%")[0] / 100
+        );
       });
-      avgPercentage = totalBench / length;
-      benchmarkings.push({ benchmarkingAvgPercentage: avgPercentage });
+
+      const percentage = totalCompletetionLevel / benchmarkings.length;
       res.status(200).json({
         success: true,
         message: "Percentage of Benchmarks ",
-        data: benchmarkings,
+        data: { percentage: percentage.toFixed(2) },
       });
-
     } catch (error) {
       next(error);
     }
