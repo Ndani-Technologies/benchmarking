@@ -71,6 +71,28 @@ const QuestionnaireController = {
       next(err);
     }
   },
+  async compareQuestions(req, res, next) {
+    try {
+      const { Id } = req.body;
+      const questionnaire = await Questionnaire.find({
+        _id: { $in: { Id } },
+      });
+      if (questionnaire) {
+        res.status(200).json({
+          success: true,
+          message: "Comparison successful",
+          data: questionnaire,
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "no questionnaires found",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   async whohasAnswer(req, res, next) {
     try {
       const totalUsers = req.body.whoHasAnswer.userId.length;

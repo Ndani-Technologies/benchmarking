@@ -14,4 +14,8 @@ router.get(
 );
 router.get("/getuserById/:id", QuestionnaireController.getUserById);
 router.post("/whohasanswer/:id", QuestionnaireController.whohasAnswer);
+router.get(
+  "/compare/compareQuestions",
+  QuestionnaireController.compareQuestions
+);
 module.exports = router;
