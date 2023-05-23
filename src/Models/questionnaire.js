@@ -46,6 +46,7 @@ const questionnaireSchema = new Schema({
       default: 0,
     },
   },
+
   response: {
     type: Number,
   },

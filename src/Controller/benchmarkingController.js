@@ -538,6 +538,7 @@ const benchmarkingController = {
         end_date = new Date(endDate);
       }
 
+
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
@@ -823,6 +824,7 @@ const benchmarkingController = {
         message: "Percentage of Benchmarks ",
         data: benchmarkings,
       });
+
     } catch (error) {
       next(error);
     }
