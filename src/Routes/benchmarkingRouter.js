@@ -34,7 +34,7 @@ router.get(
   benchmarkingController.getBenchmarkingBetweenDate
 );
 router.get(
-  "/percentage/percentageOfBenchmarks",
+  "/percentage/percentageOfBenchmarks/:id",
   benchmarkingController.getPercentage
 );
 router.get(

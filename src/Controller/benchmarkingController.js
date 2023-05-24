@@ -99,6 +99,7 @@ const benchmarkingController = {
         });
       // eslint-disable-next-line
       benchmarkings = benchmarkings.filter(
+        // eslint-disable-next-line
         (value) => value?.user?._id === req.params.id
       );
       if (benchmarkings === "") {
@@ -832,36 +833,24 @@ const benchmarkingController = {
             },
           ],
         });
-      let length = 0;
-      let userResponseLength = 0;
-      let questionLength = 0;
-      let avgPercentage = 0;
-      let totalBench = 0;
-      benchmarkings.forEach((bench) => {
-        questionLength = bench.questionnaire.length;
-        if (
-          bench.user_resp === [] ||
-          bench.user_resp === "" ||
-          bench.user_resp.length === 0
-        ) {
-          totalBench += 0;
-          userResponseLength = 0;
-        } else {
-          userResponseLength = bench.user_resp.length;
-          totalBench += (questionLength / userResponseLength) * 100;
-        }
-
-        benchmarkings.push({
-          benchmarkingPercentage: (userResponseLength / questionLength) * 100,
-        });
-        length += 1;
+      // eslint-disable-next-line
+      benchmarkings = benchmarkings.filter(
+        // eslint-disable-next-line
+        (value) => value?.user?._id === req.params.id
+      );
+      let totalCompletetionLevel = 0;
+      benchmarkings.forEach((value) => {
+        // eslint-disable-next-line
+        totalCompletetionLevel += parseInt(
+          value.completionLevel.split("%")[0] / 100
+        );
       });
-      avgPercentage = totalBench / length;
-      benchmarkings.push({ benchmarkingAvgPercentage: avgPercentage });
+
+      const percentage = totalCompletetionLevel / benchmarkings.length;
       res.status(200).json({
         success: true,
         message: "Percentage of Benchmarks ",
-        data: benchmarkings,
+        data: { percentage: percentage.toFixed(2) },
       });
     } catch (error) {
       next(error);
