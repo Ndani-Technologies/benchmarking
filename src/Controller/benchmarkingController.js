@@ -68,7 +68,69 @@ const benchmarkingController = {
       next(error);
     }
   },
+  getAllBenchmarkingByUser: async (req, res, next) => {
+    let cache = await redisClient.get(cacheKey);
+    let cacheObj = "";
+    let cacheLength = 0;
+    if (cache != null) {
+      cacheObj = JSON.parse(cache);
+      cacheLength = Object.keys(cacheObj).length;
+    } else {
+      cacheLength = 0;
+      cacheObj = "";
+    }
+    try {
+      let benchmarkings = await Benchmarking.find()
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        });
+      // eslint-disable-next-line
+      benchmarkings = benchmarkings.filter(
+        (value) => value?.user?._id === req.params.id
+      );
+      if (benchmarkings === "") {
+        res.status(404).json({
+          success: false,
+          message: "benchmarkings not found",
+        });
+        return;
+      }
+      if (benchmarkings.length > cacheLength) {
+        await redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: benchmarkings,
+        });
+      }
+      if (benchmarkings.length <= cacheLength) {
+        await redisClient.del(cacheKey);
+        await redisClient.set(cacheKey, JSON.stringify(benchmarkings));
+        cache = await redisClient.get(cacheKey);
 
+        res.status(200).json({
+          success: true,
+          message: "benchmarkings found",
+          data: JSON.parse(cache),
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   getBenchmarkingById: async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -516,7 +578,6 @@ const benchmarkingController = {
         end_date = new Date(endDate);
       }
 
-
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
@@ -802,7 +863,6 @@ const benchmarkingController = {
         message: "Percentage of Benchmarks ",
         data: benchmarkings,
       });
-
     } catch (error) {
       next(error);
     }
