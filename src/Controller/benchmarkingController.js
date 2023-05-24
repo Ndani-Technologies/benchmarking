@@ -816,7 +816,7 @@ const benchmarkingController = {
   },
   getPercentage: async (req, res, next) => {
     try {
-      const benchmarkings = await Benchmarking.find()
+      let benchmarkings = await Benchmarking.find()
         .populate("questionnaire")
         .populate({
           path: "questionnaire",
