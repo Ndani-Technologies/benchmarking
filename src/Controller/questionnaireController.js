@@ -103,6 +103,7 @@ const QuestionnaireController = {
       next(error);
     }
   },
+
   async whohasAnswer(req, res, next) {
     try {
       const totalUsers = req.body.whoHasAnswer.userId.length;
