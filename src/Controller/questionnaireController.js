@@ -223,5 +223,23 @@ const QuestionnaireController = {
       next(error);
     }
   },
+  deleteAllQuestionnaire: async (req, res, next) => {
+    try {
+      const questionnaires = await Questionnaire.deleteMany({});
+      if (questionnaires) {
+        res.status(200).json({
+          success: true,
+          message: "all questionnaires deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = QuestionnaireController;

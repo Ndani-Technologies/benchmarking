@@ -19,6 +19,7 @@ const benchmarkingController = {
       cacheLength = 0;
       cacheObj = "";
     }
+
     try {
       const benchmarkings = await Benchmarking.find()
         .populate("questionnaire")
@@ -37,7 +38,6 @@ const benchmarkingController = {
             },
           ],
         });
-
       if (benchmarkings === "") {
         res.status(404).json({
           success: false,
@@ -852,6 +852,24 @@ const benchmarkingController = {
         message: "Percentage of Benchmarks ",
         data: { percentage: percentage.toFixed(2) },
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteAllBenchmarks: async (req, res, next) => {
+    try {
+      const benchmarkings = await Benchmarking.deleteMany({});
+      if (benchmarkings) {
+        res.status(200).json({
+          success: true,
+          message: "all benchmarks deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
     } catch (error) {
       next(error);
     }
