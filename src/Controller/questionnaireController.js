@@ -225,7 +225,10 @@ const QuestionnaireController = {
   },
   deleteAllQuestionnaire: async (req, res, next) => {
     try {
-      const questionnaires = await Questionnaire.deleteMany({});
+      const { id } = req.body;
+      const questionnaires = await Questionnaire.deleteMany({
+        _id: { $in: id },
+      });
       if (questionnaires) {
         res.status(200).json({
           success: true,

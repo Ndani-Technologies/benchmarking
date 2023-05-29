@@ -167,7 +167,8 @@ const categoryController = {
   },
   deleteAllCategories: async (req, res, next) => {
     try {
-      const categories = await Category.deleteMany({});
+      const { id } = req.body;
+      const categories = await Category.deleteMany({ _id: { $in: id } });
       if (categories) {
         res.status(200).json({
           success: true,

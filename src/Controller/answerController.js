@@ -139,7 +139,8 @@ const answerController = {
   },
   deleteAllAnswers: async (req, res, next) => {
     try {
-      const answers = await Answer.deleteMany({});
+      const { id } = req.body;
+      const answers = await Answer.deleteMany({ _id: { $in: id } });
       if (answers) {
         res.status(200).json({
           success: true,

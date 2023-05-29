@@ -858,7 +858,8 @@ const benchmarkingController = {
   },
   deleteAllBenchmarks: async (req, res, next) => {
     try {
-      const benchmarkings = await Benchmarking.deleteMany({});
+      const { id } = req.body;
+      const benchmarkings = await Benchmarking.deleteMany({ _id: { $in: id } });
       if (benchmarkings) {
         res.status(200).json({
           success: true,
