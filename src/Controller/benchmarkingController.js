@@ -459,6 +459,28 @@ const benchmarkingController = {
       next(error);
     }
   },
+  compareBenchmarks: async (req, res, next) => {
+    try {
+      const { Id } = req.body;
+      const benchmarkings = await Benchmarking.find({
+        _id: { $in: { Id } },
+      });
+      if (benchmarkings) {
+        res.status(200).json({
+          success: true,
+          message: "Comparison successful",
+          data: benchmarkings,
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "no benchmarks found",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
   // eslint-disable-next-line no-unused-vars
   getCategories: async (req, res, next) => {
     res.status(200).json({
