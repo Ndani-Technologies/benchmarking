@@ -19,6 +19,7 @@ const benchmarkingController = {
       cacheLength = 0;
       cacheObj = "";
     }
+
     try {
       const benchmarkings = await Benchmarking.find()
         .populate("questionnaire")
@@ -37,7 +38,6 @@ const benchmarkingController = {
             },
           ],
         });
-
       if (benchmarkings === "") {
         res.status(404).json({
           success: false,
@@ -154,7 +154,6 @@ const benchmarkingController = {
         });
 
       const fieldCount = Object.keys(Benchmarking.schema.paths).length;
-      console.log("field count = ", fieldCount);
       let counter = 0;
       // eslint-disable-next-line array-callback-return
       Object.keys(benchmarking).reduce((count, key) => {
@@ -162,7 +161,7 @@ const benchmarkingController = {
           counter += 1;
         }
       }, 0);
-      console.log("filled count = ", counter);
+
       const percentage = (counter / fieldCount) * 100;
 
       if (benchmarking) {
@@ -408,79 +407,42 @@ const benchmarkingController = {
       next(error);
     }
   },
-  compareTwoBenchmarking: async (req, res, next) => {
+
+  compareBenchmarkings: async (req, res, next) => {
     try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-  compareThreeBenchmarking: async (req, res, next) => {
-    try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchId3 = req.params.id3;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2, benchId3] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-  compareFourBenchmarking: async (req, res, next) => {
-    try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchId3 = req.params.id3;
-      const benchId4 = req.params.id4;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2, benchId3, benchId4] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-  compareBenchmarks: async (req, res, next) => {
-    try {
-      const { Id } = req.body;
-      const benchmarkings = await Benchmarking.find({
-        _id: { $in: { Id } },
-      });
-      if (benchmarkings) {
+      const { id } = req.body;
+      const benchmarks = await Benchmarking.find({ _id: { $in: id } })
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+            },
+          ],
+        });
+      if (benchmarks) {
         res.status(200).json({
           success: true,
           message: "Comparison successful",
-          data: benchmarkings,
+          data: benchmarks,
         });
       } else {
         res.status(404).json({
           success: false,
-          message: "no benchmarks found",
+          message: "Benchmarks not Found",
         });
       }
     } catch (error) {
       next(error);
     }
   },
+
   // eslint-disable-next-line no-unused-vars
   getCategories: async (req, res, next) => {
     res.status(200).json({
@@ -699,8 +661,113 @@ const benchmarkingController = {
         }
       })
     );
-
     const dataReturn = {
+      title: benchmarking.title,
+      country: benchmarking.country,
+      status: benchmarking.status,
+      noOfQuestions: totalNumberOfQuestions,
+      attemptQuestions: totalNumberOfQusetionAttempted,
+      answerYes: count1,
+      answerNo: count2,
+      answerWeDontHavePolicy: count3,
+      answerDontKnow: count4,
+      answersComments: answerComment,
+      completionLevel,
+      startDate: benchmarking.start_date,
+      endDate: benchmarking.end_date,
+    };
+    res.status(200).json({
+      success: true,
+      message: "record retrieved",
+      data: dataReturn,
+    });
+  },
+  // eslint-disable-next-line no-unused-vars
+  getBenchmarkingAdminSummary: async (req, res, next) => {
+    const { id } = req.params;
+    const benchmarking = await Benchmarking.findById(id)
+      .populate("questionnaire")
+      .populate({
+        path: "questionnaire",
+        populate: [
+          {
+            path: "category",
+            model: "Category",
+            // select: 'language titleEng titleAr titleSp titleFr'
+          },
+          {
+            path: "answerOptions",
+            model: "answers",
+            // select: 'language includeExplanation answerAttempt'
+          },
+        ],
+      });
+    if (!benchmarking) {
+      return res
+        .status(404)
+        .send({ success: false, message: "Benchmarking not found" });
+    }
+
+    // eslint-disable-next-line camelcase
+    const { questionnaire, user_resp } = benchmarking;
+    let count1 = 0;
+    let count2 = 0;
+    let count3 = 0;
+    let count4 = 0;
+    let answerComment = 0;
+    const answerOpt = [];
+    // eslint-disable-next-line camelcase
+    const totalNumberOfQusetionAttempted = user_resp.length;
+    const totalNumberOfQuestions = questionnaire.length;
+
+    // eslint-disable-next-line camelcase
+    const completionLevel = (user_resp.length / questionnaire.length) * 100;
+    const ans = await Answer.find().select("answerOption");
+    let count = 0;
+    ans.forEach((answers) => {
+      answerOpt[count] = answers.answerOption;
+      count += 1;
+    });
+
+    count = 0;
+    // eslint-disable-next-line camelcase
+    await Promise.all(
+      // eslint-disable-next-line camelcase
+      user_resp.map(async (answerOptions) => {
+        const answ = await Answer.find(answerOptions.selectedOption).select(
+          "answerOption includeExplanation"
+        );
+
+        // eslint-disable-next-line no-plusplus
+        for (let i = 0; i < answerOpt.length; i++) {
+          if (answ[0].answerOption === answerOpt[i]) {
+            if (answ[0].includeExplanation === true) {
+              // eslint-disable-next-line no-plusplus
+              answerComment++;
+            }
+            if (answerOpt[i].toLowerCase() === "yes") {
+              // eslint-disable-next-line no-plusplus
+              count1++;
+            }
+            if (answerOpt[i].toLowerCase() === "no") {
+              // eslint-disable-next-line no-plusplus
+              count2++;
+            }
+            if (answerOpt[i].toLowerCase() === "we don't have a policy") {
+              // eslint-disable-next-line no-plusplus
+              count3++;
+            }
+            if (answerOpt[i].toLowerCase() === "don't know") {
+              // eslint-disable-next-line no-plusplus
+              count4++;
+            }
+          }
+        }
+      })
+    );
+    const dataReturn = {
+      username: benchmarking.user.firstName + benchmarking.user.lastName,
+      organization: benchmarking.user.organization,
       title: benchmarking.title,
       country: benchmarking.country,
       status: benchmarking.status,
@@ -874,6 +941,25 @@ const benchmarkingController = {
         message: "Percentage of Benchmarks ",
         data: { percentage: percentage.toFixed(2) },
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteAllBenchmarks: async (req, res, next) => {
+    try {
+      const { id } = req.body;
+      const benchmarkings = await Benchmarking.deleteMany({ _id: { $in: id } });
+      if (benchmarkings) {
+        res.status(200).json({
+          success: true,
+          message: "all benchmarks deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
     } catch (error) {
       next(error);
     }

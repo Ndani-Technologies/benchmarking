@@ -57,7 +57,6 @@ const QuestionnaireController = {
         });
       }
     } catch (err) {
-      console.log("error", err);
       next(err);
     }
   },
@@ -242,7 +241,6 @@ const QuestionnaireController = {
         data: questionnaire,
       });
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
@@ -252,6 +250,27 @@ const QuestionnaireController = {
         `http://localhost:5000/api/v1/user/${req.params.id}`
       );
       res.json(response.data);
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteAllQuestionnaire: async (req, res, next) => {
+    try {
+      const { id } = req.body;
+      const questionnaires = await Questionnaire.deleteMany({
+        _id: { $in: id },
+      });
+      if (questionnaires) {
+        res.status(200).json({
+          success: true,
+          message: "all questionnaires deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
     } catch (error) {
       next(error);
     }

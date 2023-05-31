@@ -8,6 +8,7 @@ router.get("/:id", answerController.getAnswerById);
 router.post("/", answerController.createAnswer);
 router.put("/:id", answerController.updateAnswerById);
 router.delete("/:id", answerController.deleteAnswerById);
+router.delete("/delete/deleteall", answerController.deleteAllAnswers);
 router.get(
   "/answers/getByLanguage/:language?",
   answerController.getAnswersByLanguage

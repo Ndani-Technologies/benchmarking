@@ -165,6 +165,25 @@ const categoryController = {
       next(error);
     }
   },
+  deleteAllCategories: async (req, res, next) => {
+    try {
+      const { id } = req.body;
+      const categories = await Category.deleteMany({ _id: { $in: id } });
+      if (categories) {
+        res.status(200).json({
+          success: true,
+          message: "all categories deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = categoryController;

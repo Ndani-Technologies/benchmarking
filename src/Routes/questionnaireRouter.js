@@ -8,6 +8,11 @@ router.get("/:id", QuestionnaireController.getQuestionnaire);
 router.post("/", QuestionnaireController.createQuestionnaire);
 router.put("/:id", QuestionnaireController.updateQuestionnaire);
 router.delete("/:id", QuestionnaireController.deleteQuestionnaire);
+
+router.delete(
+  "/delete/deleteall",
+  QuestionnaireController.deleteAllQuestionnaire
+);
 router.get(
   "/questionnaires/getByLanguage/:language?",
   QuestionnaireController.getQuestionnaireByLanguage

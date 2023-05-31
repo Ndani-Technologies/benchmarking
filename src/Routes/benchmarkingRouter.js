@@ -14,10 +14,7 @@ router.put("/:id", benchmarkingController.updateBenchmarkingById);
 router.delete("/:id", benchmarkingController.deleteBenchmarkingById);
 router.get("/title/:title", benchmarkingController.getBenchmarkingByTitle);
 
-router.get(
-  "/compare/compareBenchmarks",
-  benchmarkingController.compareBenchmarks
-);
+router.delete("/delete/deleteall", benchmarkingController.deleteAllBenchmarks);
 
 router.patch(
   "/user_resp_submit/:id",
@@ -25,7 +22,13 @@ router.patch(
 );
 router.patch("/user_resp_save/:id", benchmarkingController.saveUserResponse);
 
-router.get("/summary/:id", benchmarkingController.getBenchmarkingSummary);
+router.get("/summaryByUser/:id", benchmarkingController.getBenchmarkingSummary);
+
+router.get(
+  "/summaryByAdmin/:id",
+  benchmarkingController.getBenchmarkingAdminSummary
+);
+
 router.get(
   "/summaryByUsers/:id",
   benchmarkingController.getBenchmarkingSummaryByUser
@@ -51,17 +54,10 @@ router.get(
   "/startrange/:startrange/endrange/:endrange",
   benchmarkingController.getBenchmarkingByCompletionLevel
 );
-router.get(
-  "/compare/id1/:id1/id2/:id2",
-  benchmarkingController.compareTwoBenchmarking
-);
-router.get(
-  "/compare/id1/:id1/id2/:id2/id3/:id3",
-  benchmarkingController.compareThreeBenchmarking
-);
-router.get(
-  "/compare/id1/:id1/id2/:id2/id3/:id3/id4/:id4",
-  benchmarkingController.compareFourBenchmarking
+
+router.post(
+  "/compare/benchmarkcomparison",
+  benchmarkingController.compareBenchmarkings
 );
 
 module.exports = router;
