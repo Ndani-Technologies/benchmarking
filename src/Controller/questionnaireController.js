@@ -47,7 +47,6 @@ const QuestionnaireController = {
         });
       }
     } catch (err) {
-      console.log("error", err);
       next(err);
     }
   },
@@ -209,7 +208,6 @@ const QuestionnaireController = {
         data: questionnaire,
       });
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },

@@ -154,7 +154,6 @@ const benchmarkingController = {
         });
 
       const fieldCount = Object.keys(Benchmarking.schema.paths).length;
-      console.log("field count = ", fieldCount);
       let counter = 0;
       // eslint-disable-next-line array-callback-return
       Object.keys(benchmarking).reduce((count, key) => {
@@ -162,7 +161,7 @@ const benchmarkingController = {
           counter += 1;
         }
       }, 0);
-      console.log("filled count = ", counter);
+
       const percentage = (counter / fieldCount) * 100;
 
       if (benchmarking) {
@@ -408,53 +407,37 @@ const benchmarkingController = {
       next(error);
     }
   },
-  compareTwoBenchmarking: async (req, res, next) => {
+
+  compareBenchmarkings: async (req, res, next) => {
     try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-  compareThreeBenchmarking: async (req, res, next) => {
-    try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchId3 = req.params.id3;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2, benchId3] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-  compareFourBenchmarking: async (req, res, next) => {
-    try {
-      const benchId1 = req.params.id1;
-      const benchId2 = req.params.id2;
-      const benchId3 = req.params.id3;
-      const benchId4 = req.params.id4;
-      const benchmarks = await Benchmarking.find({
-        _id: { $in: [benchId1, benchId2, benchId3, benchId4] },
-      });
-      res.status(200).json({
-        success: true,
-        message: "Comparison successful",
-        data: benchmarks,
-      });
+      const { id } = req.body;
+      const benchmarks = await Benchmarking.find({ _id: { $in: id } })
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+            },
+          ],
+        });
+      if (benchmarks) {
+        res.status(200).json({
+          success: true,
+          message: "Comparison successful",
+          data: benchmarks,
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Benchmarks not Found",
+        });
+      }
     } catch (error) {
       next(error);
     }
