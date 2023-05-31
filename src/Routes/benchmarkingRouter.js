@@ -20,7 +20,13 @@ router.patch(
 );
 router.patch("/user_resp_save/:id", benchmarkingController.saveUserResponse);
 
-router.get("/summary/:id", benchmarkingController.getBenchmarkingSummary);
+router.get("/summaryByUser/:id", benchmarkingController.getBenchmarkingSummary);
+
+router.get(
+  "/summaryByAdmin/:id",
+  benchmarkingController.getBenchmarkingAdminSummary
+);
+
 router.get(
   "/summaryByUsers/:id",
   benchmarkingController.getBenchmarkingSummaryByUser
