@@ -13,7 +13,16 @@ router.post("/", benchmarkingController.createBenchmarking);
 router.put("/:id", benchmarkingController.updateBenchmarkingById);
 router.delete("/:id", benchmarkingController.deleteBenchmarkingById);
 router.get("/title/:title", benchmarkingController.getBenchmarkingByTitle);
+
 router.delete("/delete/deleteall", benchmarkingController.deleteAllBenchmarks);
+
+
+router.get(
+  "/compare/compareBenchmarks",
+  benchmarkingController.compareBenchmarks
+);
+
+
 router.patch(
   "/user_resp_submit/:id",
   benchmarkingController.submitUserResponse
@@ -51,4 +60,5 @@ router.get(
   "/compare/benchmarkcomparison",
   benchmarkingController.compareBenchmarkings
 );
+
 module.exports = router;
