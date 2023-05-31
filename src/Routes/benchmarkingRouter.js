@@ -55,7 +55,7 @@ router.get(
   benchmarkingController.getBenchmarkingByCompletionLevel
 );
 
-router.get(
+router.post(
   "/compare/benchmarkcomparison",
   benchmarkingController.compareBenchmarkings
 );
