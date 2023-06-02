@@ -8,10 +8,20 @@ router.get("/:id", QuestionnaireController.getQuestionnaire);
 router.post("/", QuestionnaireController.createQuestionnaire);
 router.put("/:id", QuestionnaireController.updateQuestionnaire);
 router.delete("/:id", QuestionnaireController.deleteQuestionnaire);
+
+router.delete(
+  "/delete/deleteall",
+  QuestionnaireController.deleteAllQuestionnaire
+);
 router.get(
   "/questionnaires/getByLanguage/:language?",
   QuestionnaireController.getQuestionnaireByLanguage
 );
 router.get("/getuserById/:id", QuestionnaireController.getUserById);
 router.post("/whohasanswer/:id", QuestionnaireController.whohasAnswer);
+router.get(
+  "/compare/compareQuestions",
+  QuestionnaireController.compareQuestions
+);
+
 module.exports = router;

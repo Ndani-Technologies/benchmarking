@@ -137,6 +137,25 @@ const answerController = {
       next(error);
     }
   },
+  deleteAllAnswers: async (req, res, next) => {
+    try {
+      const { id } = req.body;
+      const answers = await Answer.deleteMany({ _id: { $in: id } });
+      if (answers) {
+        res.status(200).json({
+          success: true,
+          message: "all answers deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = answerController;

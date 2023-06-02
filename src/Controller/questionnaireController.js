@@ -20,7 +20,17 @@ const QuestionnaireController = {
     try {
       const questionnaire = await Questionnaire.find()
         .populate("category")
-        .populate("answerOptions");
+        .populate("answerOptions")
+        .populate({
+          path: "answerOptions",
+          populate: [
+            {
+              path: "_id",
+              model: "answers",
+              select: "_id language answerOption ",
+            },
+          ],
+        });
       if (questionnaire === "") {
         res.status(404).json({
           success: false,
@@ -47,7 +57,6 @@ const QuestionnaireController = {
         });
       }
     } catch (err) {
-      console.log("error", err);
       next(err);
     }
   },
@@ -71,6 +80,29 @@ const QuestionnaireController = {
       next(err);
     }
   },
+  async compareQuestions(req, res, next) {
+    try {
+      const { Id } = req.body;
+      const questionnaire = await Questionnaire.find({
+        _id: { $in: { Id } },
+      });
+      if (questionnaire) {
+        res.status(200).json({
+          success: true,
+          message: "Comparison successful",
+          data: questionnaire,
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "no questionnaires found",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async whohasAnswer(req, res, next) {
     try {
       const totalUsers = req.body.whoHasAnswer.userId.length;
@@ -209,7 +241,6 @@ const QuestionnaireController = {
         data: questionnaire,
       });
     } catch (error) {
-      console.error(error);
       next(error);
     }
   },
@@ -219,6 +250,27 @@ const QuestionnaireController = {
         `http://localhost:5000/api/v1/user/${req.params.id}`
       );
       res.json(response.data);
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteAllQuestionnaire: async (req, res, next) => {
+    try {
+      const { id } = req.body;
+      const questionnaires = await Questionnaire.deleteMany({
+        _id: { $in: id },
+      });
+      if (questionnaires) {
+        res.status(200).json({
+          success: true,
+          message: "all questionnaires deleted",
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "internal server error",
+        });
+      }
     } catch (error) {
       next(error);
     }

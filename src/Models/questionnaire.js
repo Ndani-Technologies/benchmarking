@@ -31,8 +31,14 @@ const questionnaireSchema = new Schema({
   },
   answerOptions: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "answers",
+      _id: {
+        type: Schema.Types.ObjectId,
+        ref: "answers",
+      },
+      includeExplanation: {
+        type: Boolean,
+        default: false,
+      },
     },
   ],
   whoHasAnswer: {
