@@ -20,17 +20,17 @@ const QuestionnaireController = {
     try {
       const questionnaire = await Questionnaire.find()
         .populate("category")
-        .populate("answerOptions")
-        .populate({
-          path: "answerOptions",
-          populate: [
-            {
-              path: "_id",
-              model: "answers",
-              select: "_id language answerOption ",
-            },
-          ],
-        });
+        .populate("answerOptions");
+      // .populate({
+      //   path: "answerOptions",
+      //   populate: [
+      //     {
+      //       path: "_id",
+      //       model: "answers",
+      //     },
+      //   ],
+      // });
+      console.log("questionnaires", questionnaire[0]);
       if (questionnaire === "") {
         res.status(404).json({
           success: false,
