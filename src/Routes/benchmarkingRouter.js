@@ -28,7 +28,10 @@ router.get(
   "/summaryByAdmin/:id",
   benchmarkingController.getBenchmarkingAdminSummary
 );
-
+router.get(
+  "/getBenchmarkByUser/:id",
+  benchmarkingController.getBenchmarkingsByUser
+);
 router.get(
   "/summaryByUsers/:id",
   benchmarkingController.getBenchmarkingSummaryByUser
