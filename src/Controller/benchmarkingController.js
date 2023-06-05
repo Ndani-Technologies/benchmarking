@@ -788,6 +788,7 @@ const benchmarkingController = {
       data: dataReturn,
     });
   },
+
   // eslint-disable-next-line no-unused-vars
   getBenchmarkingSummaryByUser: async (req, res, next) => {
     const { id } = req.params;
@@ -960,6 +961,43 @@ const benchmarkingController = {
           message: "internal server error",
         });
       }
+    } catch (error) {
+      next(error);
+    }
+  },
+  getBenchmarkingsByUser: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const benchmarking = await Benchmarking.find({ "user._id": id })
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        })
+        .exec();
+      if (!benchmarking) {
+        return res
+          .status(404)
+          .send({ success: false, message: "Benchmarking not found" });
+      }
+      res
+        .status(200)
+        .send({
+          success: true,
+          message: "Benchmarking found",
+          data: benchmarking,
+        });
     } catch (error) {
       next(error);
     }
