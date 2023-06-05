@@ -472,15 +472,50 @@ const benchmarkingController = {
           },
         ],
       });
-    if (!benchmarking) {
+    if (benchmarking && benchmarking.length <= 0) {
       return res
         .status(404)
         .send({ success: false, message: "Benchmarking not found" });
     }
     const { questionnaire } = benchmarking;
+    const recomendedActionRelationships = await axios.get(
+      `${devenv.recomendedActionUrl}relationships`
+    );
+    const qid = [];
+    const rar = recomendedActionRelationships.data.data;
+    rar.forEach((items) => {
+      qid.push(items.qid);
+    });
+    let RAforUser = [];
+    req.body.user_resp.forEach(async (item) => {
+      qid.forEach((question, index) => {
+        // eslint-disable-next-line no-underscore-dangle
+        if (item.questionId === question._id) {
+          if (question.answerOptions.length > 0) {
+            question.answerOptions.forEach(async (answer) => {
+              // eslint-disable-next-line no-underscore-dangle
+              if (answer._id === item.selectedOption) {
+                RAforUser.push(rar[index].recomendedActionId);
+              }
+            });
+          }
+        }
+      });
+      RAforUser = RAforUser.flat();
+      console.log(RAforUser);
+      const requestBody = {
+        userId: req.body.userId,
+      };
+      RAforUser.forEach(async (ids) => {
+        await axios
+          // eslint-disable-next-line no-underscore-dangle
+          .patch(
+            `${devenv.recomendedActionUrl}relationships/${ids._id}`,
+            requestBody
+          );
+      });
 
-    req.body.user_resp.forEach((answer) => {
-      if (answer.selectedOption) {
+      if (item.selectedOption) {
         totalAnswers += 1;
       }
     });
@@ -986,18 +1021,16 @@ const benchmarkingController = {
           ],
         })
         .exec();
-      if (!benchmarking) {
+      if (benchmarking.length <= 0) {
         return res
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
       }
-      res
-        .status(200)
-        .send({
-          success: true,
-          message: "Benchmarking found",
-          data: benchmarking,
-        });
+      res.status(200).send({
+        success: true,
+        message: "Benchmarking found",
+        data: benchmarking,
+      });
     } catch (error) {
       next(error);
     }
