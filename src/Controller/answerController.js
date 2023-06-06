@@ -66,6 +66,10 @@ const answerController = {
 
   createAnswer: async (req, res, next) => {
     const { answerOption, includeExplanation, language } = req.body;
+    let includeInputBox = false;
+    if (req.body.includeInputBox) {
+      includeInputBox = req.body.includeInputBox;
+    }
     try {
       let answer;
       if (language) {
@@ -73,9 +77,14 @@ const answerController = {
           answerOption,
           includeExplanation,
           language,
+          includeInputBox,
         });
       } else {
-        answer = await Answer.create({ answerOption, includeExplanation });
+        answer = await Answer.create({
+          answerOption,
+          includeExplanation,
+          includeInputBox,
+        });
       }
       res
         .status(201)
