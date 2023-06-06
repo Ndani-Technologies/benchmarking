@@ -458,8 +458,8 @@ const benchmarkingController = {
     const { user_resp, userId } = req.body;
 
     try {
-      console.log("here1012", id);
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
+
         "questionnaire"
       );
       if (!benchmarking) {
@@ -467,17 +467,13 @@ const benchmarkingController = {
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
       }
-
-      console.log("here101");
       const { questionnaire } = benchmarking;
       const recomendedActionRelationships = await axios.get(
         `${devenv.recomendedActionUrl}relationships`
       );
       const rar = recomendedActionRelationships.data.data;
       const qid = rar.map((item) => item.qid);
-
-      console.log("here10");
-      const RAforUser = [];
+      let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
         const question = qid.find((q) => item.questionId === q._id);
@@ -493,8 +489,13 @@ const benchmarkingController = {
         }
       });
 
-      console.log("here1");
+
       const requestBody = { userId };
+      const data = {
+        user: userId,
+      };
+      RAforUser = RAforUser.flat();
+
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
@@ -504,7 +505,7 @@ const benchmarkingController = {
           )
         )
       );
-      console.log("here2");
+
       const totalAnswers = user_resp.filter(
         (item) => item.selectedOption
       ).length;
