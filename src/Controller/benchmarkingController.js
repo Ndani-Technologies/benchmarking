@@ -466,14 +466,12 @@ const benchmarkingController = {
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
       }
-
       const { questionnaire } = benchmarking;
       const recomendedActionRelationships = await axios.get(
         `${devenv.recomendedActionUrl}relationships`
       );
       const rar = recomendedActionRelationships.data.data;
       const qid = rar.map((item) => item.qid);
-
       let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
@@ -491,6 +489,8 @@ const benchmarkingController = {
       });
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
+      RAforUser = RAforUser.flat();
+
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
