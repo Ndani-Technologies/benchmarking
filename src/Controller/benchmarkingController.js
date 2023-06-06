@@ -465,7 +465,6 @@ const benchmarkingController = {
         return res
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
-
       }
 
       const { questionnaire } = benchmarking;
@@ -475,7 +474,7 @@ const benchmarkingController = {
       const rar = recomendedActionRelationships.data.data;
       const qid = rar.map((item) => item.qid);
 
-      const RAforUser = [];
+      let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
         const question = qid.find((q) => item.questionId === q._id);
@@ -491,13 +490,17 @@ const benchmarkingController = {
         }
       });
 
-      const requestBody = { userId };
+      // const requestBody = { userId };
+      const data = {
+        user: userId,
+      };
+      RAforUser = RAforUser.flat();
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
           axios.patch(
             `${devenv.recomendedActionUrl}actionsteps/update/ByUser/${ids._id}`,
-            requestBody
+            data
           )
         )
       );

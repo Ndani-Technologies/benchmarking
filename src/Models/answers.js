@@ -17,6 +17,11 @@ const answerSchema = new Schema({
     required: true,
     default: false,
   },
+  includeInputBox: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   answerAttempt: {
     type: Number,
   },
