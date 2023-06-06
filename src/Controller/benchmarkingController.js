@@ -489,12 +489,9 @@ const benchmarkingController = {
         }
       });
 
-
       const requestBody = { userId };
-      const data = {
-        user: userId,
-      };
       RAforUser = RAforUser.flat();
+
 
       await Promise.all(
         RAforUser.map((ids) =>
@@ -505,7 +502,6 @@ const benchmarkingController = {
           )
         )
       );
-
       const totalAnswers = user_resp.filter(
         (item) => item.selectedOption
       ).length;
