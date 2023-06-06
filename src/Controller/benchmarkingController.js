@@ -459,6 +459,7 @@ const benchmarkingController = {
 
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
+
         "questionnaire"
       );
       if (!benchmarking) {
@@ -487,9 +488,10 @@ const benchmarkingController = {
           }
         }
       });
-      RAforUser = RAforUser.flat();
+
       const requestBody = { userId };
       RAforUser = RAforUser.flat();
+
 
       await Promise.all(
         RAforUser.map((ids) =>
