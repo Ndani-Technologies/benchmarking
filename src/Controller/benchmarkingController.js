@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable camelcase */
 const { default: axios } = require("axios");
 const Benchmarking = require("../Models/bench");
 const Questionnaire = require("../Models/questionnaire");
@@ -453,93 +455,70 @@ const benchmarkingController = {
   submitUserResponse: async (req, res, next) => {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
-    const { user_resp } = req.body;
-    let totalAnswers = 0;
-    const benchmarking = await Benchmarking.findById(id)
-      .populate("questionnaire")
-      .populate({
-        path: "questionnaire",
-        populate: [
-          {
-            path: "category",
-            model: "Category",
-            // select: 'language titleEng titleAr titleSp titleFr'
-          },
-          {
-            path: "answerOptions",
-            model: "answers",
-            // select: 'language includeExplanation answerAttempt'
-          },
-        ],
-      });
-    if (benchmarking && benchmarking.length <= 0) {
-      return res
-        .status(404)
-        .send({ success: false, message: "Benchmarking not found" });
-    }
-    const { questionnaire } = benchmarking;
-    const recomendedActionRelationships = await axios.get(
-      `${devenv.recomendedActionUrl}relationships`
-    );
-    const qid = [];
-    const rar = recomendedActionRelationships.data.data;
-    rar.forEach((items) => {
-      qid.push(items.qid);
-    });
-    let RAforUser = [];
-    req.body.user_resp.forEach(async (item) => {
-      qid.forEach((question, index) => {
-        // eslint-disable-next-line no-underscore-dangle
-        if (item.questionId === question._id) {
-          if (question.answerOptions.length > 0) {
-            question.answerOptions.forEach(async (answer) => {
-              // eslint-disable-next-line no-underscore-dangle
-              if (answer._id === item.selectedOption) {
-                RAforUser.push(rar[index].recomendedActionId);
-              }
-            });
+    const { user_resp, userId } = req.body;
+
+    try {
+      const benchmarking = await Benchmarking.findById(id).populate(
+        "questionnaire"
+      );
+      if (!benchmarking) {
+        return res
+          .status(404)
+          .send({ success: false, message: "Benchmarking not found" });
+      }
+
+      const { questionnaire } = benchmarking;
+      const recomendedActionRelationships = await axios.get(
+        `${devenv.recomendedActionUrl}relationships`
+      );
+      const rar = recomendedActionRelationships.data.data;
+      const qid = rar.map((item) => item.qid);
+
+      const RAforUser = [];
+      // eslint-disable-next-line camelcase
+      user_resp.forEach((item) => {
+        const question = qid.find((q) => item.questionId === q._id);
+        if (question && question.answerOptions.length > 0) {
+          const answer = question.answerOptions.find(
+            (a) => a._id === item.selectedOption
+          );
+          if (answer) {
+            RAforUser.push(
+              rar.find((r, index) => qid[index] === question).recomendedActionId
+            );
           }
         }
       });
-      RAforUser = RAforUser.flat();
-      console.log(RAforUser);
-      const requestBody = {
-        userId: req.body.userId,
-      };
-      RAforUser.forEach(async (ids) => {
-        await axios
+
+      const requestBody = { userId };
+      await Promise.all(
+        RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
-          .patch(
-            `${devenv.recomendedActionUrl}relationships/${ids._id}`,
+          axios.patch(
+            `${devenv.recomendedActionUrl}actionsteps/update/ByUser/${ids._id}`,
             requestBody
-          );
-      });
+          )
+        )
+      );
 
-      if (item.selectedOption) {
-        totalAnswers += 1;
-      }
-    });
-    const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+      const totalAnswers = user_resp.filter(
+        (item) => item.selectedOption
+      ).length;
+      const completionLevel = (totalAnswers / questionnaire.length) * 10000;
 
-    try {
       const status = "Active";
-      let endDate = "";
-      // eslint-disable-next-line camelcase
-      let end_date = "";
-      if (completionLevel === 10000) {
-        endDate = Date.now();
-      }
-      if (endDate !== "") {
-        // eslint-disable-next-line camelcase
-        end_date = new Date(endDate);
-      }
-
+      const end_date = completionLevel === 10000 ? new Date() : "";
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
-        // eslint-disable-next-line
-        { user_resp, completionLevel, status, end_date },
+        {
+          user_resp,
+          completionLevel,
+          status,
+          end_date,
+        },
         { new: true }
       );
+
       res.send({
         success: true,
         message: "User Response updated",
