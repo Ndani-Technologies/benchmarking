@@ -475,6 +475,7 @@ const benchmarkingController = {
 
       const qid = rar.map((item) => item.qid);
 
+
       // okay till here
 
       let RAforUser = [];
@@ -510,6 +511,7 @@ const benchmarkingController = {
               return option._id === selectedId;
             });
           });
+
           if (answer) {
             RAforUser.push(
               rar.find((r, index) => qid[index] === question).recomendedActionId
