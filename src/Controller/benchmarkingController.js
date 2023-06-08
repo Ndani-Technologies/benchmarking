@@ -502,6 +502,7 @@ const benchmarkingController = {
       const requestBody = { userId };
 
       RAforUser = RAforUser.flat();
+
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
