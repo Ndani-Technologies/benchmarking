@@ -475,22 +475,43 @@ const benchmarkingController = {
 
       const qid = rar.map((item) => item.qid);
 
+
+      // okay till here
+
       let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
-        const question = qid.find((q) => item.questionId === q._id);
+        let answer_found;
+        const question = qid.find((q) => {
+          if (item.questionId === q._id) {
+            const user_resp_answers = item.selectedOption;
+            user_resp_answers.forEach((answer) => {
+              answer_found = q.answerOptions.find(
+                (q_answer) => q_answer._id === answer
+              );
+              // eslint-disable-next-line no-useless-return
+              if (answer_found) return;
+            });
+            if (answer_found) return q;
+          }
+        });
 
-        if (question && question.answerOptions.length > 0) {
+        if (question && answer_found && question.answerOptions.length > 0) {
           const selectedOptions = item.selectedOption; // Assuming item.selectedOption is an array
-          console.log(question.answerOptions);
-          console.log(selectedOptions);
+
           // eslint-disable-next-line arrow-body-style
           const answer = selectedOptions.map((selectedId) => {
-            return question.answerOptions.find(
-              (option) => option._id === selectedId
-            );
+            return question.answerOptions.find((option) => {
+              console.log(
+                "ids",
+                option._id,
+                selectedId,
+                option._id === selectedId
+              );
+              return option._id === selectedId;
+            });
           });
-          console.log(answer);
+
           if (answer) {
             RAforUser.push(
               rar.find((r, index) => qid[index] === question).recomendedActionId
