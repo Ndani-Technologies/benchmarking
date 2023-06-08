@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 const { default: axios } = require("axios");
@@ -459,7 +460,6 @@ const benchmarkingController = {
 
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
-
         "questionnaire"
       );
       if (!benchmarking) {
@@ -472,15 +472,25 @@ const benchmarkingController = {
         `${devenv.recomendedActionUrl}relationships`
       );
       const rar = recomendedActionRelationships.data.data;
+
       const qid = rar.map((item) => item.qid);
+
       let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
         const question = qid.find((q) => item.questionId === q._id);
+
         if (question && question.answerOptions.length > 0) {
-          const answer = question.answerOptions.find(
-            (a) => a._id === item.selectedOption
-          );
+          const selectedOptions = item.selectedOption; // Assuming item.selectedOption is an array
+          console.log(question.answerOptions);
+          console.log(selectedOptions);
+          // eslint-disable-next-line arrow-body-style
+          const answer = selectedOptions.map((selectedId) => {
+            return question.answerOptions.find(
+              (option) => option._id === selectedId
+            );
+          });
+          console.log(answer);
           if (answer) {
             RAforUser.push(
               rar.find((r, index) => qid[index] === question).recomendedActionId
@@ -490,9 +500,8 @@ const benchmarkingController = {
       });
 
       const requestBody = { userId };
+
       RAforUser = RAforUser.flat();
-
-
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
