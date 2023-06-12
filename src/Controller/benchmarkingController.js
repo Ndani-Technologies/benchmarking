@@ -35,7 +35,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -94,7 +94,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -149,7 +149,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -235,7 +235,7 @@ const benchmarkingController = {
                 model: "Category",
               },
               {
-                path: "answerOptions",
+                path: "answerOptions.answerOption",
                 model: "answers",
               },
             ],
@@ -270,7 +270,7 @@ const benchmarkingController = {
                 model: "Category",
               },
               {
-                path: "answerOptions",
+                path: "answerOptions.answerOption",
                 model: "answers",
               },
             ],
@@ -424,7 +424,7 @@ const benchmarkingController = {
               model: "Category",
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
             },
           ],
@@ -474,7 +474,6 @@ const benchmarkingController = {
       const rar = recomendedActionRelationships.data.data;
 
       const qid = rar.map((item) => item.qid);
-
 
       // okay till here
 
@@ -576,7 +575,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -638,7 +637,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -742,7 +741,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -849,7 +848,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -963,7 +962,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -1025,7 +1024,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
