@@ -29,13 +29,24 @@ const questionnaireSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Category",
   },
+  // answerOptions: [
+  //   {
+  //     type: Schema.Types.ObjectId,
+  //     ref: "answers",
+  //   },
+  // ],
+
   answerOptions: [
     {
-      _id: {
+      answerOption: {
         type: Schema.Types.ObjectId,
         ref: "answers",
       },
       includeExplanation: {
+        type: Boolean,
+        default: false,
+      },
+      includeInputField: {
         type: Boolean,
         default: false,
       },

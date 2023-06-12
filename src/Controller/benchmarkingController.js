@@ -1,3 +1,6 @@
+/* eslint-disable array-callback-return */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable camelcase */
 const { default: axios } = require("axios");
 const Benchmarking = require("../Models/bench");
 const Questionnaire = require("../Models/questionnaire");
@@ -453,58 +456,101 @@ const benchmarkingController = {
   submitUserResponse: async (req, res, next) => {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
-    const { user_resp } = req.body;
-    let totalAnswers = 0;
-    const benchmarking = await Benchmarking.findById(id)
-      .populate("questionnaire")
-      .populate({
-        path: "questionnaire",
-        populate: [
-          {
-            path: "category",
-            model: "Category",
-            // select: 'language titleEng titleAr titleSp titleFr'
-          },
-          {
-            path: "answerOptions",
-            model: "answers",
-            // select: 'language includeExplanation answerAttempt'
-          },
-        ],
-      });
-    if (!benchmarking) {
-      return res
-        .status(404)
-        .send({ success: false, message: "Benchmarking not found" });
-    }
-    const { questionnaire } = benchmarking;
-
-    req.body.user_resp.forEach((answer) => {
-      if (answer.selectedOption) {
-        totalAnswers += 1;
-      }
-    });
-    const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+    const { user_resp, userId } = req.body;
 
     try {
-      const status = "Active";
-      let endDate = "";
-      // eslint-disable-next-line camelcase
-      let end_date = "";
-      if (completionLevel === 10000) {
-        endDate = Date.now();
+      const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
+        "questionnaire"
+      );
+      if (!benchmarking) {
+        return res
+          .status(404)
+          .send({ success: false, message: "Benchmarking not found" });
       }
-      if (endDate !== "") {
-        // eslint-disable-next-line camelcase
-        end_date = new Date(endDate);
-      }
+      const { questionnaire } = benchmarking;
+      const recomendedActionRelationships = await axios.get(
+        `${devenv.recomendedActionUrl}relationships`
+      );
+      const rar = recomendedActionRelationships.data.data;
 
+      const qid = rar.map((item) => item.qid);
+
+
+      // okay till here
+
+      let RAforUser = [];
+      // eslint-disable-next-line camelcase
+      user_resp.forEach((item) => {
+        let answer_found;
+        const question = qid.find((q) => {
+          if (item.questionId === q._id) {
+            const user_resp_answers = item.selectedOption;
+            user_resp_answers.forEach((answer) => {
+              answer_found = q.answerOptions.find(
+                (q_answer) => q_answer._id === answer
+              );
+              // eslint-disable-next-line no-useless-return
+              if (answer_found) return;
+            });
+            if (answer_found) return q;
+          }
+        });
+
+        if (question && answer_found && question.answerOptions.length > 0) {
+          const selectedOptions = item.selectedOption; // Assuming item.selectedOption is an array
+
+          // eslint-disable-next-line arrow-body-style
+          const answer = selectedOptions.map((selectedId) => {
+            return question.answerOptions.find((option) => {
+              console.log(
+                "ids",
+                option._id,
+                selectedId,
+                option._id === selectedId
+              );
+              return option._id === selectedId;
+            });
+          });
+
+          if (answer) {
+            RAforUser.push(
+              rar.find((r, index) => qid[index] === question).recomendedActionId
+            );
+          }
+        }
+      });
+
+      const requestBody = { userId };
+
+      RAforUser = RAforUser.flat();
+
+      await Promise.all(
+        RAforUser.map((ids) =>
+          // eslint-disable-next-line no-underscore-dangle
+          axios.patch(
+            `${devenv.recomendedActionUrl}actionsteps/update/ByUser/${ids._id}`,
+            requestBody
+          )
+        )
+      );
+      const totalAnswers = user_resp.filter(
+        (item) => item.selectedOption
+      ).length;
+      const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+
+      const status = "Active";
+      const end_date = completionLevel === 10000 ? new Date() : "";
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
-        // eslint-disable-next-line
-        { user_resp, completionLevel, status, end_date },
+        {
+          user_resp,
+          completionLevel,
+          status,
+          end_date,
+        },
         { new: true }
       );
+
       res.send({
         success: true,
         message: "User Response updated",
@@ -788,6 +834,7 @@ const benchmarkingController = {
       data: dataReturn,
     });
   },
+
   // eslint-disable-next-line no-unused-vars
   getBenchmarkingSummaryByUser: async (req, res, next) => {
     const { id } = req.params;
@@ -960,6 +1007,41 @@ const benchmarkingController = {
           message: "internal server error",
         });
       }
+    } catch (error) {
+      next(error);
+    }
+  },
+  getBenchmarkingsByUser: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const benchmarking = await Benchmarking.find({ "user._id": id })
+        .populate("questionnaire")
+        .populate({
+          path: "questionnaire",
+          populate: [
+            {
+              path: "category",
+              model: "Category",
+              // select: 'language titleEng titleAr titleSp titleFr'
+            },
+            {
+              path: "answerOptions",
+              model: "answers",
+              // select: 'language includeExplanation answerAttempt'
+            },
+          ],
+        })
+        .exec();
+      if (benchmarking.length <= 0) {
+        return res
+          .status(404)
+          .send({ success: false, message: "Benchmarking not found" });
+      }
+      res.status(200).send({
+        success: true,
+        message: "Benchmarking found",
+        data: benchmarking,
+      });
     } catch (error) {
       next(error);
     }
