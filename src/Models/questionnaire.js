@@ -29,25 +29,29 @@ const questionnaireSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Category",
   },
-  answerOptions: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "answers",
-    },
-  ],
-
   // answerOptions: [
   //   {
-  //     _id: {
-  //       type: Schema.Types.ObjectId,
-  //       ref: "answers",
-  //     },
-  //     includeExplanation: {
-  //       type: Boolean,
-  //       default: false,
-  //     },
+  //     type: Schema.Types.ObjectId,
+  //     ref: "answers",
   //   },
   // ],
+
+  answerOptions: [
+    {
+      answerOption: {
+        type: Schema.Types.ObjectId,
+        ref: "answers",
+      },
+      includeExplanation: {
+        type: Boolean,
+        default: false,
+      },
+      includeInputField: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
   whoHasAnswer: {
     userId: [
       {
