@@ -147,8 +147,9 @@ const QuestionnaireController = {
     });
     try {
       await questionnaire.save();
-      // eslint-disable-next-line no-underscore-dangle
+
       const populatedQuestionnaire = await Questionnaire.findById(
+        // eslint-disable-next-line no-underscore-dangle
         questionnaire._id
       )
         .populate("category")

@@ -475,42 +475,17 @@ const benchmarkingController = {
 
       const qid = rar.map((item) => item.qid);
 
-      // okay till here
 
       let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
-        let answer_found;
-        const question = qid.find((q) => {
-          if (item.questionId === q._id) {
-            const user_resp_answers = item.selectedOption;
-            user_resp_answers.forEach((answer) => {
-              answer_found = q.answerOptions.find(
-                (q_answer) => q_answer._id === answer
-              );
-              // eslint-disable-next-line no-useless-return
-              if (answer_found) return;
-            });
-            if (answer_found) return q;
-          }
-        });
-
-        if (question && answer_found && question.answerOptions.length > 0) {
-          const selectedOptions = item.selectedOption; // Assuming item.selectedOption is an array
-
-          // eslint-disable-next-line arrow-body-style
-          const answer = selectedOptions.map((selectedId) => {
-            return question.answerOptions.find((option) => {
-              console.log(
-                "ids",
-                option._id,
-                selectedId,
-                option._id === selectedId
-              );
-              return option._id === selectedId;
-            });
-          });
-
+        const question = qid.find((q) => item.questionId === q._id);
+        if (question && question.answerOptions.length > 0) {
+          const answer = question.answerOptions.find((a) =>
+            item.selectedOption.find(
+              (b) => b.answerOption === a.answerOption._id
+            )
+          );
           if (answer) {
             RAforUser.push(
               rar.find((r, index) => qid[index] === question).recomendedActionId
@@ -518,10 +493,10 @@ const benchmarkingController = {
           }
         }
       });
-
+      RAforUser = RAforUser.flat();
       const requestBody = { userId };
 
-      RAforUser = RAforUser.flat();
+      console.log(RAforUser);
 
       await Promise.all(
         RAforUser.map((ids) =>
@@ -590,7 +565,11 @@ const benchmarkingController = {
 
     req.body.user_resp.forEach((answer) => {
       if (answer.selectedOption) {
-        totalAnswers += 1;
+        answer.selectedOption.forEach((ans) => {
+          if (ans.answerOption) {
+            totalAnswers += 1;
+          }
+        });
       }
     });
     const completionLevel = (totalAnswers / questionnaire.length) * 10000;
