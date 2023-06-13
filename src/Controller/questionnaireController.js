@@ -1,6 +1,7 @@
 const axios = require("../../node_modules/axios/dist/node/axios.cjs");
 const { redisClient } = require("../middleware/redisClient");
 const Questionnaire = require("../Models/questionnaire");
+const Answer = require("../Models/answers");
 
 const cacheKey = "QUESTIONNAIRE";
 
@@ -20,17 +21,10 @@ const QuestionnaireController = {
     try {
       const questionnaire = await Questionnaire.find()
         .populate("category")
-        .populate("answerOptions");
-      // .populate({
-      //   path: "answerOptions",
-      //   populate: [
-      //     {
-      //       path: "_id",
-      //       model: "answers",
-      //     },
-      //   ],
-      // });
-      console.log("questionnaires", questionnaire[0]);
+        .populate({
+          path: "answerOptions.answerOption",
+          model: "answers",
+        });
       if (questionnaire === "") {
         res.status(404).json({
           success: false,
@@ -65,7 +59,10 @@ const QuestionnaireController = {
     try {
       const questionnaire = await Questionnaire.findById(req.params.id)
         .populate("category")
-        .populate("answerOptions");
+        .populate({
+          path: "answerOptions.answerOption",
+          model: "answers",
+        });
       if (questionnaire == null) {
         return res
           .status(404)
@@ -135,18 +132,22 @@ const QuestionnaireController = {
     }
   },
   async createQuestionnaire(req, res, next) {
-    // const userId = req.params.id;
-    // req.body.whoHasAnswer = userId;
-    // const lastquestion = await Questionnaire.findOne().sort({ _id: -1 });
-    // if (lastquestion.response) {
-    //   req.body.response = lastquestion.response + 1;
-    // } else {
-    //   req.body.response = 1;
-    // }
-
     const questionnaire = new Questionnaire(req.body);
+    const { answerOptions } = req.body;
+    answerOptions.forEach(async (answers) => {
+      const answer = await Answer.findById(answers.answerOption);
+      answer.includeExplanation = answers.includeExplanation;
+      answer.includeInputField = answers.includeInputField;
+      if (!answer.answerAttempt) {
+        answer.answerAttempt = 1;
+      } else {
+        answer.answerAttempt += 1;
+      }
+      await answer.save();
+    });
     try {
       await questionnaire.save();
+
       const populatedQuestionnaire = await Questionnaire.findById(
         // eslint-disable-next-line no-underscore-dangle
         questionnaire._id
@@ -202,7 +203,10 @@ const QuestionnaireController = {
       await redisClient.del(cacheKey);
       const allQuestionnaires = await Questionnaire.find()
         .populate("category")
-        .populate("answerOptions");
+        .populate({
+          path: "answerOptions.answerOption",
+          model: "answers",
+        });
       await redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,
@@ -227,7 +231,10 @@ const QuestionnaireController = {
       await redisClient.del(cacheKey);
       const allQuestionnaires = await Questionnaire.find()
         .populate("category")
-        .populate("answerOptions");
+        .populate({
+          path: "answerOptions.answerOption",
+          model: "answers",
+        });
       await redisClient.set(cacheKey, JSON.stringify(allQuestionnaires));
       res.json({
         success: true,

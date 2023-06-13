@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 const { default: axios } = require("axios");
@@ -34,7 +35,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -93,7 +94,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -148,7 +149,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -234,7 +235,7 @@ const benchmarkingController = {
                 model: "Category",
               },
               {
-                path: "answerOptions",
+                path: "answerOptions.answerOption",
                 model: "answers",
               },
             ],
@@ -269,7 +270,7 @@ const benchmarkingController = {
                 model: "Category",
               },
               {
-                path: "answerOptions",
+                path: "answerOptions.answerOption",
                 model: "answers",
               },
             ],
@@ -423,7 +424,7 @@ const benchmarkingController = {
               model: "Category",
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
             },
           ],
@@ -458,7 +459,7 @@ const benchmarkingController = {
     const { user_resp, userId } = req.body;
 
     try {
-      const benchmarking = await Benchmarking.findById(id).populate(
+      const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
         "questionnaire"
       );
       if (!benchmarking) {
@@ -466,13 +467,14 @@ const benchmarkingController = {
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
       }
-
       const { questionnaire } = benchmarking;
       const recomendedActionRelationships = await axios.get(
         `${devenv.recomendedActionUrl}relationships`
       );
       const rar = recomendedActionRelationships.data.data;
+
       const qid = rar.map((item) => item.qid);
+
 
       let RAforUser = [];
       // eslint-disable-next-line camelcase
@@ -493,7 +495,9 @@ const benchmarkingController = {
       });
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
+
       console.log(RAforUser);
+
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
@@ -503,7 +507,6 @@ const benchmarkingController = {
           )
         )
       );
-
       const totalAnswers = user_resp.filter(
         (item) => item.selectedOption
       ).length;
@@ -547,7 +550,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -613,7 +616,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -717,7 +720,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -824,7 +827,7 @@ const benchmarkingController = {
             // select: 'language titleEng titleAr titleSp titleFr'
           },
           {
-            path: "answerOptions",
+            path: "answerOptions.answerOption",
             model: "answers",
             // select: 'language includeExplanation answerAttempt'
           },
@@ -938,7 +941,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
@@ -1000,7 +1003,7 @@ const benchmarkingController = {
               // select: 'language titleEng titleAr titleSp titleFr'
             },
             {
-              path: "answerOptions",
+              path: "answerOptions.answerOption",
               model: "answers",
               // select: 'language includeExplanation answerAttempt'
             },
