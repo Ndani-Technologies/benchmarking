@@ -146,11 +146,20 @@ const QuestionnaireController = {
 
     const questionnaire = new Questionnaire(req.body);
     try {
-      const newQuestionnaire = await questionnaire.save();
+      await questionnaire.save();
+      const populatedQuestionnaire = await Questionnaire.findById(
+        // eslint-disable-next-line no-underscore-dangle
+        questionnaire._id
+      )
+        .populate("category")
+        .populate({
+          path: "answerOptions.answerOption",
+          model: "answers",
+        });
       res.status(201).json({
         success: true,
         message: "Successfully created Questionnaire",
-        data: newQuestionnaire,
+        data: populatedQuestionnaire,
       });
     } catch (err) {
       next(err);

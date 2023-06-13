@@ -465,7 +465,6 @@ const benchmarkingController = {
         return res
           .status(404)
           .send({ success: false, message: "Benchmarking not found" });
-
       }
 
       const { questionnaire } = benchmarking;
@@ -475,13 +474,15 @@ const benchmarkingController = {
       const rar = recomendedActionRelationships.data.data;
       const qid = rar.map((item) => item.qid);
 
-      const RAforUser = [];
+      let RAforUser = [];
       // eslint-disable-next-line camelcase
       user_resp.forEach((item) => {
         const question = qid.find((q) => item.questionId === q._id);
         if (question && question.answerOptions.length > 0) {
-          const answer = question.answerOptions.find(
-            (a) => a._id === item.selectedOption
+          const answer = question.answerOptions.find((a) =>
+            item.selectedOption.find(
+              (b) => b.answerOption === a.answerOption._id
+            )
           );
           if (answer) {
             RAforUser.push(
@@ -490,8 +491,9 @@ const benchmarkingController = {
           }
         }
       });
-
+      RAforUser = RAforUser.flat();
       const requestBody = { userId };
+      console.log(RAforUser);
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
@@ -560,7 +562,11 @@ const benchmarkingController = {
 
     req.body.user_resp.forEach((answer) => {
       if (answer.selectedOption) {
-        totalAnswers += 1;
+        answer.selectedOption.forEach((ans) => {
+          if (ans.answerOption) {
+            totalAnswers += 1;
+          }
+        });
       }
     });
     const completionLevel = (totalAnswers / questionnaire.length) * 10000;

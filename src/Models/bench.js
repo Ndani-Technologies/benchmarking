@@ -53,14 +53,20 @@ const benchmarkingSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "questionnaire",
         },
-        selectedOption: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "answers",
-        },
-        comment: {
-          type: String,
-          default: "",
-        },
+        selectedOption: [
+          {
+            answerOption: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "answers",
+            },
+            includeExplanation: {
+              type: String,
+            },
+            includeInputField: {
+              type: String,
+            },
+          },
+        ],
       },
     ],
   },
