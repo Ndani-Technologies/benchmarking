@@ -457,6 +457,7 @@ const benchmarkingController = {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
     const { user_resp, userId } = req.body;
+    console.log("user_resp", user_resp[0].selectedOption);
 
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
@@ -474,7 +475,6 @@ const benchmarkingController = {
       const rar = recomendedActionRelationships.data.data;
 
       const qid = rar.map((item) => item.qid);
-
 
       let RAforUser = [];
       // eslint-disable-next-line camelcase
