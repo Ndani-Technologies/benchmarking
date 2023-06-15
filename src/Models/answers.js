@@ -21,6 +21,12 @@ const answerSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  includeExplanationValue: {
+    type: String,
+  },
+  includeInputFieldValue: {
+    type: String,
+  },
   answerAttempt: {
     type: Number,
   },
