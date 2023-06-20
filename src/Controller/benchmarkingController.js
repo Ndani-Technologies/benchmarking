@@ -188,6 +188,13 @@ const benchmarkingController = {
     const { userId, title, country } = req.body;
     try {
       const user = await axios.get(`${devenv.userUrl}user/${userId}`);
+      const userBody = user.data.data;
+      let benchmarkAssigned = userBody.benchmarksAssigned;
+      // eslint-disable-next-line no-plusplus
+      benchmarkAssigned++;
+      await axios.patch(`${devenv.userUrl}user/${userId}`, {
+        benchmarksAssigned: benchmarkAssigned,
+      });
       if (user.data.success) {
         const questionnaire = await Questionnaire.find({});
         const benchTitle = await Benchmarking.find({ title });
@@ -457,7 +464,16 @@ const benchmarkingController = {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
     const { user_resp, userId } = req.body;
-    console.log("user_resp", user_resp[0].selectedOption);
+
+    const user = await axios.get(`${devenv.userUrl}user/${userId}`);
+    const userBody = user.data.data;
+    let benchmarksComplete = userBody.benchmarkComplete;
+    // eslint-disable-next-line no-plusplus
+    benchmarksComplete++;
+    await axios.patch(`${devenv.userUrl}user/${userId}`, {
+      benchmarkComplete: benchmarksComplete,
+    });
+
 
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
@@ -496,7 +512,6 @@ const benchmarkingController = {
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
 
-      console.log(RAforUser);
 
       await Promise.all(
         RAforUser.map((ids) =>
@@ -511,9 +526,8 @@ const benchmarkingController = {
         (item) => item.selectedOption
       ).length;
       const completionLevel = (totalAnswers / questionnaire.length) * 10000;
-
       const status = "Active";
-      const end_date = completionLevel === 10000 ? new Date() : "";
+      const end_date = new Date();
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         {
