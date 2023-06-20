@@ -464,6 +464,7 @@ const benchmarkingController = {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
     const { user_resp, userId } = req.body;
+
     const user = await axios.get(`${devenv.userUrl}user/${userId}`);
     const userBody = user.data.data;
     let benchmarksComplete = userBody.benchmarkComplete;
@@ -472,6 +473,7 @@ const benchmarkingController = {
     await axios.patch(`${devenv.userUrl}user/${userId}`, {
       benchmarkComplete: benchmarksComplete,
     });
+
 
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
@@ -509,6 +511,7 @@ const benchmarkingController = {
       });
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
+
 
       await Promise.all(
         RAforUser.map((ids) =>
