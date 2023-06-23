@@ -474,6 +474,7 @@ const benchmarkingController = {
       benchmarkComplete: benchmarksComplete,
     });
 
+
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
         "questionnaire"
@@ -511,6 +512,7 @@ const benchmarkingController = {
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
 
+
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
@@ -524,6 +526,7 @@ const benchmarkingController = {
       //   (item) => item.selectedOption
       // ).length;
       const completionLevel = (user_resp.length / questionnaire.length) * 10000;
+
       const status = "Active";
       const end_date = new Date();
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
