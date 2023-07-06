@@ -601,11 +601,11 @@ const benchmarkingController = {
         // eslint-disable-next-line camelcase
         end_date = new Date(endDate);
       }
-
+      const isSaved = true;
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
-        { user_resp, completionLevel, status, end_date },
+        { user_resp, completionLevel, status, end_date, isSaved },
         { new: true }
       );
       res.send({
