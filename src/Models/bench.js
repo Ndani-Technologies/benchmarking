@@ -47,6 +47,10 @@ const benchmarkingSchema = new mongoose.Schema(
     end_date: {
       type: Date,
     },
+    isComplete: {
+      type: Boolean,
+      default: false,
+    },
     user_resp: [
       {
         questionId: {
