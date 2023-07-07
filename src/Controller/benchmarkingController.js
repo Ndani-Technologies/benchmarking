@@ -474,7 +474,6 @@ const benchmarkingController = {
       benchmarkComplete: benchmarksComplete,
     });
 
-
     try {
       const benchmarking = await Benchmarking.findOne({ _id: id }).populate(
         "questionnaire"
@@ -512,7 +511,6 @@ const benchmarkingController = {
       RAforUser = RAforUser.flat();
       const requestBody = { userId };
 
-
       await Promise.all(
         RAforUser.map((ids) =>
           // eslint-disable-next-line no-underscore-dangle
@@ -528,6 +526,7 @@ const benchmarkingController = {
       const completionLevel = (user_resp.length / questionnaire.length) * 10000;
 
       const status = "Active";
+      const isComplete = true;
       const end_date = new Date();
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
@@ -536,6 +535,7 @@ const benchmarkingController = {
           completionLevel,
           status,
           end_date,
+          isComplete,
         },
         { new: true }
       );
@@ -553,7 +553,7 @@ const benchmarkingController = {
     const { id } = req.params;
     // eslint-disable-next-line camelcase
     const { user_resp } = req.body;
-    let totalAnswers = 0;
+    // let totalAnswers = 0;
     const benchmarking = await Benchmarking.findById(id)
       .populate("questionnaire")
       .populate({
@@ -578,16 +578,16 @@ const benchmarkingController = {
     }
     const { questionnaire } = benchmarking;
 
-    req.body.user_resp.forEach((answer) => {
-      if (answer.selectedOption) {
-        answer.selectedOption.forEach((ans) => {
-          if (ans.answerOption) {
-            totalAnswers += 1;
-          }
-        });
-      }
-    });
-    const completionLevel = (totalAnswers / questionnaire.length) * 10000;
+    // req.body.user_resp.forEach((answer) => {
+    //   if (answer.selectedOption) {
+    //     answer.selectedOption.forEach((ans) => {
+    //       if (ans.answerOption) {
+    //          totalAnswers += 1;
+    //       }
+    //     });
+    //   }
+    // });
+    const completionLevel = (user_resp.length / questionnaire.length) * 10000;
 
     try {
       const status = "Active";
@@ -601,11 +601,11 @@ const benchmarkingController = {
         // eslint-disable-next-line camelcase
         end_date = new Date(endDate);
       }
-
+      const isSaved = true;
       const updatedBenchmarking = await Benchmarking.findByIdAndUpdate(
         id,
         // eslint-disable-next-line
-        { user_resp, completionLevel, status, end_date },
+        { user_resp, completionLevel, status, end_date, isSaved },
         { new: true }
       );
       res.send({
